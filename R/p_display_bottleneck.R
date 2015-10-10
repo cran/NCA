@@ -6,11 +6,7 @@ function (bottlenecks, names, y.index, prefix, use.title, pdf, bottleneck.x, bot
   }
 
   for (name in names(bottlenecks)) {
-    mp <- bottlenecks[[name]]
-    if (is.null(mp) || ncol(mp) == 1) {
-      next
-    }
-    p_display_table(mp, names, name, y.index, prefix, use.title, pdf, bottleneck.x, bottleneck.y, nx, steps)
+    p_display_table(bottlenecks[[name]], names, name, y.index, prefix, use.title, pdf, bottleneck.x, bottleneck.y, nx, steps)
   }
   
   if (pdf) {
@@ -30,6 +26,10 @@ function (mp, names, name, y.index, prefix, use.title, pdf, bottleneck.x, bottle
   tmp <- matrix(sapply(mp, p_pretty_number, "NN", precision.x), nrow=steps+1)[,-1]
   if (nx == 1) {
     tmp <- matrix(tmp, ncol=1)
+  }
+
+  if (length(tmp) == 0) {
+    return()
   }
 
   # Use numbered rows, legend as subtitle to the plot

@@ -8,11 +8,12 @@ function (loop.data, mpy, cutoff, bottleneck.x) {
   slope       <- unname( coef(cols)["x"])
   ceiling     <- p_ceiling(loop.data, slope, intercept)
   effect      <- ceiling / loop.data$scope
-  ineffs      <- p_ineffs(loop.data, intercept, slope, ceiling)
+  ineffs      <- p_ineffs(loop.data, intercept, slope)
   bottleneck  <- p_bottleneck(loop.data, mpy, slope, intercept, cutoff, bottleneck.x)
-  
+  above       <- if(slope > 0) 0 else NA
+
   return(list(line=cols,
               ceiling=ceiling, slope=slope, effect=effect,
-              intercept=intercept, above=0, ineffs=ineffs,
+              intercept=intercept, above=above, ineffs=ineffs,
               bottleneck=bottleneck))
 }

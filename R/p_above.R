@@ -1,5 +1,9 @@
 p_above <- 
 function (loop.data, slope, intercept) {
+  if (slope < 0) {
+    return( NaN )
+  }
+
   x <- loop.data$x
   y <- loop.data$y
   

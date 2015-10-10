@@ -25,14 +25,17 @@ function (uglyNumber, default="", prec=3, useSpaces=FALSE) {
       prec <- max(0, 3 - floor(log10(abs(uglyNumber))))
     }
   }
-  tmp <- sprintf("%%.%df%%s", prec)
+  fmt <- sprintf("%%.%df%%s", prec)
   
   nSpaces <- 0
   if (useSpaces) {
     nSpaces <- ifelse(prec == 0, 4, max(0, 3-prec))
   }
-  
-  return(sprintf(tmp, uglyNumber, paste(rep(" ", nSpaces), collapse='')))
+
+  # We hate to see -0.0
+  uglyNumber[abs(uglyNumber) < 0.1 ^ prec] <- 0
+
+  return(sprintf(fmt, uglyNumber, paste(rep(" ", nSpaces), collapse='')))
 }
 
 p_pretty_mpx <- 

@@ -7,7 +7,7 @@
     msg1  <- sprintf("Dul, J. %s.", year)
     msg2  <- sprintf("%s.", title)
     msg3  <- sprintf("R Package Version %s.\n", meta$Version)
-    msg4  <- "URL: http://cran.r-project.org/package=NCA"
+    msg4  <- "URL: http://cran.r-project.org/web/packages/NCA/"
 
     msg5  <- "This package is based on:"
     msg6  <- "Dul, J. (2015) Logic and Methodology of"

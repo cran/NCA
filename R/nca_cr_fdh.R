@@ -1,5 +1,5 @@
 nca_cr_fdh <-
-function (loop.data, mpy, cutoff, bottleneck.x) {
+function (loop.data, mpy, cutoff, bottleneck.x, fast.fdh=TRUE) {
   x <- loop.data$x
   y <- loop.data$y 
   
@@ -10,31 +10,37 @@ function (loop.data, mpy, cutoff, bottleneck.x) {
   y <- y - y.min  
   
   # Find the points on the ceiling ("PEERS")
-  # with optimal technical efficiency for DEA(fdh)
-  fdh <- dea(x, y, RTS="fdh", ORIENTATION="graph")
-  
-  # Get the sorted, corrected peer matrix
-  peers <- p_optimal_peers(fdh, x, y)
-    
-  if (!is.vector(peers)) {
+  if (fast.fdh) {
+    # Use out own implementation for finding peers
+    peers <- p_fdh_peers(x, y)
+  } else {
+    # with optimal technical efficiency for DEA(fdh)
+    fdh <- dea(x, y, RTS="fdh", ORIENTATION="graph")
+
+    # Get the sorted, corrected peer matrix
+    peers <- p_optimal_peers(fdh, x, y)
+  }
+
+  if (!is.vector(peers) && length(peers) > 2) {
     # Perform OLS through the peers
-    x <- peers[,3] + x.min
-    y <- peers[,4] + y.min
+    x <- peers[,1] + x.min
+    y <- peers[,2] + y.min
     line <- lm(y~x)
     
     intercept <- unname(coef(line)["(Intercept)"])
     slope     <- unname(coef(line)["x"])
     ceiling   <- p_ceiling(loop.data, slope, intercept)
+    above     <- p_above(loop.data, slope, intercept)
   } else {
     ceiling   <- 0
     intercept <- NA
     slope     <- NA
-    line      <- NULL    
+    line      <- NULL
+    above     <- 0
   }
   
   effect      <- ceiling / loop.data$scope
-  ineffs      <- p_ineffs(loop.data, intercept, slope, ceiling)
-  above       <- p_above(loop.data, slope, intercept)
+  ineffs      <- p_ineffs(loop.data, intercept, slope)
   bottleneck  <- p_bottleneck(loop.data, mpy, slope, intercept, cutoff, bottleneck.x)
 
   return(list(line=line,

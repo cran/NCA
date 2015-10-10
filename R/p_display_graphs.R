@@ -1,17 +1,17 @@
-p_display_graphs <- 
-function (results.nca, loop.data, title="NCA Plot", use.title=TRUE, prefix="out", pdf=FALSE) {
+p_display_graphs <-
+function (results.nca, loop.data, title="NCA Plot", use.title=TRUE, pdf=FALSE, prefix="out") {
   create_outline <- function () {
     abline(h=loop.data$y.low,  lty=2, col="grey")
     abline(h=loop.data$y.high, lty=2, col="grey")
     abline(v=loop.data$x.low,  lty=2, col="grey")
     abline(v=loop.data$x.high, lty=2, col="grey")
   }
-  
+
   lines <- list(ab=c("ols", "cols", "qr", "sfa", "cr_vrs", "cr_fdh"),
                 lh=c("lh"),
                 dea=c("ce_vrs", "ce_fdh"))
   
-  # Create new graphics or PDF
+  # Open new window or PDF
   if (pdf) {
     p_new_pdf(prefix, loop.data$id.x, loop.data$id.y)
   } else {
@@ -21,21 +21,16 @@ function (results.nca, loop.data, title="NCA Plot", use.title=TRUE, prefix="out"
     par(mfrow=c(1, 1))
   }
   
-  # Output data in scatter plot
+  # Plot the data points
   plot (loop.data$x, loop.data$y, 
         xlab=loop.data$names[1], ylab=loop.data$names[2], col="blue",
         xlim=c(loop.data$x.low, loop.data$x.high), 
         ylim=c(loop.data$y.low, loop.data$y.high))
-  
-  if (use.title) {
-    title <- paste0(title, " : ", p_generate_title(loop.data))
-    title(title, cex.main=1)
-  }
-  
-  # Create the outline and title
+
+  # Plot the scope outline
   create_outline()
   
-  # Create the legend
+  # Plot the lines, collect data for the legend
   legendParams = list()
   for (typeName in names(results.nca)) {
     type      <- results.nca[[typeName]]
@@ -61,9 +56,16 @@ function (results.nca, loop.data, title="NCA Plot", use.title=TRUE, prefix="out"
     legendParams$types  = append(legendParams$types,  lineType)
     legendParams$colors = append(legendParams$colors, lineColor)
   }
-  
+
+  # Plot the legend
   if (length(legendParams) > 0) {
     legend("topleft", cex=0.7, legendParams$names,
            lty=legendParams$types, col=legendParams$colors)
+  }
+
+  # Plot the title
+  if (use.title) {
+    title <- paste0(title, " : ", p_generate_title(loop.data))
+    title(title, cex.main=1)
   }
 }

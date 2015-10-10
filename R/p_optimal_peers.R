@@ -48,6 +48,8 @@ function (input, x, y) {
   # the first row of set of rows with same Y is maintained,
   # and rows with unique Y are maintained
   K4g <- ToMatrix(K4f[!duplicated(K4f[,4]),])
-  
-  return (K4g[sort.list(K4g[,3]), ])
+
+  peers <- K4g[sort.list(K4g[,3]), ]
+
+  return ( peers[, c(3, 4)] )
 }

@@ -15,9 +15,9 @@ function (results.nca, loop.data, use.title=TRUE, pdf=FALSE) {
   rownames(table1) <- p_TABLE1ROWS
   
   # Effect per alalysis type
-  data <- c(sapply(results.nca, function(x) p_pretty_number(x$ceiling, "NA")),
-            sapply(results.nca, function(x) p_pretty_number(x$effect, "NA")),
-            sapply(results.nca, function(x) p_pretty_number(x$above, "NA", prec=0)))
+  data <- c(sapply(results.nca, function(x) p_pretty_number(x$ceiling)),
+            sapply(results.nca, function(x) p_pretty_number(x$effect)),
+            sapply(results.nca, function(x) p_pretty_number(x$above, prec=0)))
   table2 <- matrix(data, ncol=3)
   
   # Add col/row names, also remove the OLS row

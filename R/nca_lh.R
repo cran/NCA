@@ -17,7 +17,7 @@ function (loop.data, mpy, cutoff, bottleneck.x) {
   if (effect > 0) {
     slope     <- (loop.data$y.high - y.xlow) / (x.yhigh - loop.data$x.low)
     intercept <- loop.data$y.high - (slope * x.yhigh)
-    ineffs    <- p_ineffs(loop.data, intercept, slope, ceiling)
+    ineffs    <- p_ineffs(loop.data, intercept, slope)
     above     <- p_above(loop.data, slope, intercept)
   } else {
     slope     <- NA
