@@ -1,0 +1,128 @@
+p_plot <-
+function (analyses, loop.data) {
+  plot <- list()
+
+  plot$x <- loop.data$x
+  plot$y <- loop.data$y
+  plot$scope.theo <- loop.data$scope.theo
+  plot$names <- loop.data$names
+  plot$flip.x <- loop.data$flip.x
+  plot$flip.y <- loop.data$flip.y
+  plot$title <- p_generate_title(colnames(plot$x), colnames(plot$y))
+  plot$methods <- names(analyses)
+  plot$lines <- list()
+
+  for (method in plot$methods) {
+    analysis <- analyses[[method]]
+    if (is.null(analysis$line)) {
+      next
+    }
+    plot$lines[[method]] <- analysis$line
+  }
+
+  return ( plot )
+}
+
+p_display_plot <-
+function (plot, pdf=FALSE, path=NULL) {
+  # Get the line colors and types from the global env, allowing user changes
+  line_colors <- mget("line.colors", envir=.GlobalEnv, ifnotfound="notfound")[[1]]
+  line_types <- mget("line.types", envir=.GlobalEnv, ifnotfound="notfound")[[1]]
+  # Append default for missing values
+  line_colors <- append(line_colors, line.colors)
+  line_types <- append(line_types, line.types)
+  # The same for line width and point types
+  lineWidth <- mget("line.width", envir=.GlobalEnv, ifnotfound="notfound")[[1]]
+  if (!is.numeric(lineWidth)) {
+    lineWidth <- line.width
+  }
+  pointType <- mget("point.type", envir=.GlobalEnv, ifnotfound="notfound")[[1]]
+  if (pointType == "notfound") {
+    pointType <- point.type
+  }
+
+  # Open new window or PDF
+  if (pdf) {
+    p_new_pdf("plot", plot$title, path)
+  } else {
+    p_new_window(title=plot$title)
+    par(family="")
+    par(mfrow=c(1, 1))
+  }
+
+  # Plot the data points
+  flip.x <- plot$flip.x
+  flip.y <- plot$flip.y
+  xlim <- c(plot$scope.theo[1 + flip.x], plot$scope.theo[2 - flip.x])
+  ylim <- c(plot$scope.theo[3 + flip.y], plot$scope.theo[4 - flip.y])
+  plot (plot$x, plot$y, col="blue", xlim=xlim, ylim=ylim, pch=pointType,
+        xlab=colnames(plot$x), ylab=tail(plot$names, n=1))
+
+  # Plot the scope outline
+  p_plot_outline(plot)
+  # Plot a simple grid, only for development
+  #p_plot_grid(plot, 10)
+
+  # Plot the legend before adding the clipping area
+  legendParams = list()
+  for (method in plot$methods) {
+    line_color <- line_colors[[method]]
+    line_type  <- line_types[[method]]
+    legendParams$names  = append(legendParams$names,  p_pretty_name(method))
+    legendParams$types  = append(legendParams$types,  line_type)
+    legendParams$colors = append(legendParams$colors, line_color)
+  }
+  if (length(legendParams) > 0) {
+    legend("topleft", cex=0.7, legendParams$names,
+           lty=legendParams$types, col=legendParams$colors, bg=NA)
+  }
+
+  # Apply clipping to the lines
+  clip(xlim[1], xlim[2], ylim[1], ylim[2])
+
+  # Print the lines
+  for (method in plot$methods) {
+    line <- plot$lines[[method]]
+    line_color <- line_colors[[method]]
+    line_type  <- line_types[[method]]
+
+    if (method %in% c("lh", "ce_vrs", "ce_fdh")) {
+      lines(line[[1]], line[[2]], type="l",
+            lty=line_type, col=line_color, lwd=lineWidth)
+    } else {
+      abline(line, lty=line_type, col=line_color, lwd=lineWidth)
+    }
+  }
+
+  # Plot the title
+  title <- paste0("NCA Plot : ", plot$title)
+  title(title, cex.main=1)
+
+  if (pdf) {
+    dev.off()
+    cat("")
+  }
+}
+
+p_plot_outline <-
+function (plot) {
+  abline(v=plot$scope.theo[1], lty=2, col="grey")
+  abline(v=plot$scope.theo[2], lty=2, col="grey")
+  abline(h=plot$scope.theo[3], lty=2, col="grey")
+  abline(h=plot$scope.theo[4], lty=2, col="grey")
+}
+
+p_plot_grid <-
+function (plot, size) {
+  start <- size * ceiling(plot$scope.theo[1] / size)
+  while (start < plot$scope.theo[2]) {
+    abline(v=start, lty=1, col="grey")
+    start <- start + size
+  }
+  start <- size * ceiling(plot$scope.theo[3] / size)
+  while (start < plot$scope.theo[4]) {
+    abline(h=start, lty=1, col="grey")
+    start <- start + size
+  }
+}
+

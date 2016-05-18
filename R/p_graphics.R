@@ -1,10 +1,12 @@
 p_new_pdf <- 
-function (out.prefix, name1, name2, name3="", paper="a4") {
-  if (name3 == "") {
-    file.name <- paste(out.prefix, name1, name2, "pdf", sep=".")
-  } else {
-    file.name <- paste(out.prefix, name1, name2, name3, "pdf", sep=".") 
+function (name1, name2, path=NULL, paper="a4") {
+  if (!is.null(path)) {
+    name1 <- paste(path, name1, sep="/")
+    gsub("//", "/", name1)
   }
+  file.name <- paste(name1, gsub(" ", "_", name2), "pdf", sep=".")
+  file.name <- gsub("_-_", "-", file.name)
+
   if (paper == "A4r") {
     pdf(file.name, paper=paper, width = 0, height = 0)
   } else {

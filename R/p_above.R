@@ -1,21 +1,26 @@
 p_above <- 
 function (loop.data, slope, intercept) {
-  if (slope < 0) {
+  x <- loop.data$x
+  y <- loop.data$y
+  flip.x <- loop.data$flip.x
+  flip.y <- loop.data$flip.y
+
+  # Upper left and lower right
+  if ( (flip.x == flip.y) && (is.na(slope) || slope < 0) ) {
+    return( NaN )
+  }
+  # Lower left and upper right
+  if ( (flip.x != flip.y) && (is.na(slope) || slope > 0) ) {
     return( NaN )
   }
 
-  x <- loop.data$x
-  y <- loop.data$y
-  
+  # Vertical difference between observations and ceiling line
   y.c <- slope * x + intercept
-  
-  # vertical difference between points on ceiling and observation for given x
-  y.diff <- y - y.c
-  
-  for (i in 1:length(x)) {
-    y.diff[i] <- max(0, y.diff[i])
+  if ( !flip.y ) {
+    y.diff <- y - y.c
+  } else {
+    y.diff <- y.c - y
   }
-  
-  # TODO Magic number
-  return( sum(y.diff > 0.0000001) )
+
+  return ( sum(y.diff > 1e-07, na.rm=TRUE) )
 }

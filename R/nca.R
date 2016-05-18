@@ -1,121 +1,112 @@
 nca <-
-function (data, nx, ny, 
-          ols=TRUE, cols=FALSE, qr=FALSE, lh=FALSE, 
-          ce_vrs=FALSE, cr_vrs=FALSE, ce_fdh=TRUE, cr_fdh=TRUE, sfa=FALSE,
-          fast.fdh=TRUE, fast.vrs=TRUE, invisible=FALSE,
-          title="NCA Plot", use.title=TRUE, pdf=FALSE, prefix="out",
-          results=FALSE, bottleneck.x='percentage.range',
-          bottleneck.y='percentage.range', steps=10, cutoff=0) {
+function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh")) {
+  model <- nca_analysis(data, x, y, ceilings=ceilings)
+  attr(model, "suppress.output") <- FALSE
 
-  bottleneck.x <- p_validate_bottleneck(bottleneck.x, "x")
-  bottleneck.y <- p_validate_bottleneck(bottleneck.y, "y")
+  return( model )
+}
 
-  all_loopdata    <- matrix(list(), nrow = nx, ncol = ny)
-  all_values      <- matrix(list(), nrow = nx, ncol = ny)
-  all_bottlenecks <- matrix(list(), nrow = 1, ncol = ny)
+nca_analysis <-
+function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
+          flip.x=FALSE, flip.y=FALSE, scope=NULL, weighting=FALSE,
+          bottleneck.x='percentage.range', bottleneck.y='percentage.range',
+          steps=10, step.size=NULL, cutoff=0) {
 
-  # Start looping the Ys
-  for (id.y in 1:ny) {
-    bottleneck.xy <- p_mp_mpy(data, id.y, nx, steps, bottleneck.y)
-    mpx <- bottleneck.xy[[1]]
-    mpy <- bottleneck.xy[[2]]
+  # Validate and clean data
+  cleaned <- p_validate_clean(data, x, y)
+  data.x <- cleaned$x
+  data.y <- cleaned$y
 
-    bottlenecks <- list()
-    if (lh)     { bottlenecks[['lh']]     <- mpx }
-    if (cols)   { bottlenecks[['cols']]   <- mpx }
-    if (qr)     { bottlenecks[['qr']]     <- mpx }
-    if (cr_vrs) { bottlenecks[['cr_vrs']] <- mpx }
-    if (ce_vrs) { bottlenecks[['ce_vrs']] <- mpx }
-    if (ce_fdh) { bottlenecks[['ce_fdh']] <- mpx }
-    if (cr_fdh) { bottlenecks[['cr_fdh']] <- mpx }
-    if (sfa)    { bottlenecks[['sfa']]    <- mpx }
+  # Validate ceiling types
+  ceilings <- p_validate_ceilings(ceilings)
 
-    # Start looping the Xs
-    for (id.x in 1:nx) {
-      loop.data <- loop_data(data, id.x, id.y, nx)
-      all_loopdata[[id.x, id.y]] <- loop.data
+  # Validate flip.x and flip.y
+  flip.x <- p_validate_flipx(x, flip.x)
+  flip.y <- isTRUE(flip.y)
 
-      p_warn_percentage_max(bottleneck.y, loop.data, id.y)
+  # Validate scope
+  scope <- p_scope(x, scope)
 
-      results.nca <- list()
-      if (ols) {
-        analysis <- nca_ols(loop.data, mpy, cutoff, bottleneck.x)
-        analysis$bottleneck <- NULL
-        results.nca$ols <- analysis
-      }
-      if (lh) {
-        analysis <- nca_lh(loop.data, mpy, cutoff, bottleneck.x)
-        bottlenecks$lh <- cbind(bottlenecks$lh, analysis$bottleneck)
-        analysis$bottleneck <- NULL
-        results.nca$lh <- analysis
-      }
-      if (cols) {
-        analysis <- nca_cols(loop.data, mpy, cutoff, bottleneck.x)
-        bottlenecks$cols <- cbind(bottlenecks$cols, analysis$bottleneck)
-        analysis$bottleneck <- NULL
-        results.nca$cols <- analysis
-      }
-      if (qr) {
-        analysis <- nca_qr(loop.data, mpy, cutoff, bottleneck.x)
-        bottlenecks$qr <- cbind(bottlenecks$qr, analysis$bottleneck)
-        analysis$bottleneck <- NULL
-        results.nca$qr <- analysis
-      }
-      if (ce_vrs) {
-        analysis <- nca_ce_vrs(loop.data, mpy, cutoff, bottleneck.x, fast.vrs)
-        bottlenecks$ce_vrs <- cbind(bottlenecks$ce_vrs, analysis$bottleneck)
-        analysis$bottleneck <- NULL
-        results.nca$ce_vrs <- analysis
-      }
-      if (cr_vrs) {
-        analysis <- nca_cr_vrs(loop.data, mpy, cutoff, bottleneck.x, fast.vrs)
-        bottlenecks$cr_vrs <- cbind(bottlenecks$cr_vrs, analysis$bottleneck)
-        analysis$bottleneck <- NULL
-        results.nca$cr_vrs <- analysis
-      }
-      if (ce_fdh) {
-        analysis <- nca_ce_fdh(loop.data, mpy, cutoff, bottleneck.x, fast.fdh)
-        bottlenecks$ce_fdh <- cbind(bottlenecks$ce_fdh, analysis$bottleneck)
-        analysis$bottleneck <- NULL
-        results.nca$ce_fdh <- analysis
-      }
-      if (cr_fdh) {
-        analysis <- nca_cr_fdh(loop.data, mpy, cutoff, bottleneck.x, fast.fdh)
-        bottlenecks$cr_fdh <- cbind(bottlenecks$cr_fdh, analysis$bottleneck)
-        analysis$bottleneck <- NULL
-        results.nca$cr_fdh <- analysis
-      }
-      if (sfa) {
-        analysis <- nca_sfa(loop.data, mpy, cutoff, bottleneck.x)
-        if (!is.na(analysis$bottleneck)) {
-          bottlenecks$sfa <- cbind(bottlenecks$sfa, analysis$bottleneck)
-        }
-        analysis$bottleneck <- NULL
-        results.nca$sfa <- analysis
-      }
+  # Data object for bottlenecks
+  bn.data <- p_bottleneck_data(data.x, data.y, scope, flip.y, ceilings,
+                               bottleneck.x, bottleneck.y, steps, step.size, cutoff)
 
-      # Output graph and tables for this X+Y
-      if (!invisible) {
-        p_display_graphs(results.nca, loop.data, title, use.title, pdf, prefix)
-        p_display_tables(results.nca, loop.data, use.title, pdf)
-        if (results) {
-          p_display_results(results.nca, loop.data, prefix, pdf)
-        }
-      }
+  # Create output lists
+  plots <- list()
+  summaries <- list()
 
-      all_values[[id.x, id.y]] <- results.nca
+  # Loop the independent varaibles
+  for (id.x in 1:length(data.x)) {
+    loop.data <- p_create_loop_data(data.x, data.y, scope, flip.x, flip.y, id.x, weighting)
+    p_warn_percentage_max(loop.data, bn.data)
+    x.name <- loop.data$names[id.x]
+
+    analyses <- list()
+    if ("ols" %in% ceilings) {
+      analysis <- p_nca_ols(loop.data, bn.data)
+      analysis$bottleneck <- NULL
+      analyses$ols <- analysis
+    }
+    if ("lh" %in% ceilings) {
+      analysis <- p_nca_lh(loop.data, bn.data)
+      bn.data$bottlenecks$lh[x.name] <- analysis$bottleneck
+      analysis$bottleneck <- NULL
+      analyses$lh <- analysis
+    }
+    if ("cols" %in% ceilings) {
+      analysis <- p_nca_cols(loop.data, bn.data)
+      bn.data$bottlenecks$cols[x.name] <- analysis$bottleneck
+      analysis$bottleneck <- NULL
+      analyses$cols <- analysis
+    }
+    if ("qr" %in% ceilings) {
+      analysis <- p_nca_qr(loop.data, bn.data)
+      bn.data$bottlenecks$qr[x.name] <- analysis$bottleneck
+      analysis$bottleneck <- NULL
+      analyses$qr <- analysis
+    }
+    if ("ce_vrs" %in% ceilings) {
+      analysis <- p_nca_ce_vrs(loop.data, bn.data)
+      bn.data$bottlenecks$ce_vrs[x.name] <- analysis$bottleneck
+      analysis$bottleneck <- NULL
+      analyses$ce_vrs <- analysis
+    }
+    if ("cr_vrs" %in% ceilings) {
+      analysis <- p_nca_cr_vrs(loop.data, bn.data)
+      bn.data$bottlenecks$cr_vrs[x.name] <- analysis$bottleneck
+      analysis$bottleneck <- NULL
+      analyses$cr_vrs <- analysis
+    }
+    if ("ce_fdh" %in% ceilings) {
+      analysis <- p_nca_ce_fdh(loop.data, bn.data)
+      bn.data$bottlenecks$ce_fdh[x.name] <- analysis$bottleneck
+      analysis$bottleneck <- NULL
+      analyses$ce_fdh <- analysis
+    }
+    if ("cr_fdh" %in% ceilings) {
+      analysis <- p_nca_cr_fdh(loop.data, bn.data)
+      bn.data$bottlenecks$cr_fdh[x.name] <- analysis$bottleneck
+      analysis$bottleneck <- NULL
+      analyses$cr_fdh <- analysis
+    }
+    if ("sfa" %in% ceilings) {
+      analysis <- p_nca_sfa(loop.data, bn.data)
+      if (!is.null(analysis$bottleneck)) {
+        bn.data$bottlenecks$sfa[x.name] <- analysis$bottleneck
+      }
+      analysis$bottleneck <- NULL
+      analyses$sfa <- analysis
     }
 
-    # Display bottleneck for this Y
-    if (!invisible) {
-      p_display_bottleneck(bottlenecks, colnames(data), id.y, prefix, use.title, pdf, bottleneck.x, bottleneck.y, nx, steps)
-    }
-
-    all_bottlenecks[[1, id.y]] <- bottlenecks
+    plots[[x.name]] <- p_plot(analyses, loop.data)
+    summaries[[x.name]] <- p_summary(analyses, loop.data)
   }
 
-  if (invisible) {
-    return ( list(
-      loopdatas=all_loopdata, values=all_values, bottlenecks=all_bottlenecks ) )
-  }
+  model <- list( plots=plots,
+                 summaries=summaries,
+                 bottlenecks=bn.data$bottlenecks )
+  class(model) <- "nca_result"
+  attr(model, "suppress.output") <- TRUE
+
+  return ( model )
 }

@@ -1,4 +1,4 @@
-nca_ols <-
+p_nca_ols <-
 function (loop.data, ...) {
   x         <- loop.data$x
   y         <- loop.data$y
@@ -6,12 +6,13 @@ function (loop.data, ...) {
   intercept <- unname(coef(ols)["(Intercept)"])
   slope     <- unname(coef(ols)["x"])
   ceiling   <- p_ceiling(loop.data, slope, intercept)
-  effect    <- ceiling / loop.data$scope
-  ineffs    <- p_ineffs(loop.data, intercept, slope)
+  effect    <- ceiling / loop.data$scope.area
+  ineffs    <- p_ineffs(loop.data, slope, intercept)
   above     <- p_above(loop.data, slope, intercept)
   
   return(list(line=ols,
-              ceiling=ceiling, slope=slope, effect=effect,
-              intercept=intercept, above=above, ineffs=ineffs,
+              slope=slope, intercept=intercept,
+              ceiling=ceiling, effect=effect,
+              ineffs=ineffs, above=above,
               bottleneck=NULL))
 }
