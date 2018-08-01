@@ -66,7 +66,7 @@ function (loop.data, slope, intercept) {
 }
 
 p_ce_ceiling <-
-function (loop.data, peers, flip.x, flip.y, method) {
+function (loop.data, peers, method) {
   emp <- loop.data$scope.emp
   theo <- loop.data$scope.theo
   flip.x <- loop.data$flip.x
@@ -75,10 +75,16 @@ function (loop.data, peers, flip.x, flip.y, method) {
   # Get the part of the ceiling between theo and emp scope
   ceiling <- p_scope_ceiling(peers, theo, emp, flip.x, flip.y)
 
-  # Single peer, different cases for FHD+VRS
+  # Single peer, different cases for FHD+VRS and conf lines
   if (is.vector(peers) || length(peers) <= 2) {
     # if there is only one peer, the ceiling zone is zero or 'scope ceiling'
     if (method %in% c("fdh", "vrs")) {
+      return ( ceiling )
+    } else if (method == "con") {
+      if ( (!flip.y && peers[2] > theo[4]) ||
+           (flip.y && peers[2] < theo[3]) ) {
+        return( NaN )
+      }
       return ( ceiling )
     }
   }
@@ -92,13 +98,18 @@ function (loop.data, peers, flip.x, flip.y, method) {
       part.a <- (peers[i+1,2] - peers[i,2]) * (peers[i+1,1] - peers[1,1])
       part.b <- 0.5 * (peers[i+1,2] - peers[i,2]) * (peers[i+1,1] - peers[i,1])
       ceiling <- ceiling + abs(part.a) - abs(part.b)
+    } else if (method == "con") {
+      x.length <- peers[i+1,1] - emp[1 + flip.x]
+      y1 <- p_if_min_else_max(!flip.y, emp[4-flip.y], peers[i,2])
+      y2 <- p_if_min_else_max(!flip.y, emp[4-flip.y], peers[i+1,2])
+      y.length <- y2 - y1
+      ceiling <- ceiling + abs(x.length * y.length)
     }
   }
 
   return( ceiling )
 }
 
-#
 p_scope_ceiling <-
 function (peers, theo, emp, flip.x, flip.y) {
   if (identical(emp, theo)) {
@@ -132,4 +143,21 @@ function (peers, theo, emp, flip.x, flip.y) {
     cross <- x1 * y1
     return (left + bottom - cross)
   }
+}
+
+p_cm_ceiling <-
+function (loop.data, peers) {
+  theo <- loop.data$scope.theo
+  flip.x <- loop.data$flip.x
+  flip.y <- loop.data$flip.y
+
+  ceiling <- 0
+  for (i in 1:nrow(peers)) {
+    next.x <- ifelse(i < nrow(peers), peers[i + 1, 1], theo[2 - flip.x])
+    x.length <- abs(peers[i, 1] - next.x)
+    y.length <- abs(peers[i, 2] - theo[4 - flip.y])
+    ceiling <- ceiling + x.length * y.length
+  }
+
+  return( ceiling )
 }

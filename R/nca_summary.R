@@ -20,17 +20,17 @@ function (summary, path) {
 
   # Plot the 2 dataframes
   textplot(p_pretty_global(summary$global),
-           cex=1.5, halign="left", mar=c(0,0,4,0), rmar=1)
+           cex=1.45, halign="left", mar=c(0,0,4,0), rmar=1)
   title <- paste("NCA Parameters :", p_generate_title(x.name, y.name))
   par(family="")
-  title(title, cex.main=1.5)
+  title(title, cex.main=1.45)
   par(family="mono")
 
   if (ncol(summary$params) == 0) {
-    textplot(" No NCA parameters available because only OLS selected\n", cex=1.5, halign="left")
+    textplot(" No NCA parameters available because only OLS selected\n", cex=1.45, halign="left")
   } else {
     textplot(p_pretty_params(summary$params),
-             cex=1.5, halign="left", mar=c(0,0,0,0), rmar=1)
+             cex=1.45, halign="left", mar=c(0,0,0,0), rmar=1)
   }
 
   dev.off()
@@ -67,18 +67,24 @@ function (summaries) {
   }
 
   simple <- matrix(nrow=length(names(summaries)),
-                   ncol=length(colnames(summaries[[1]]$params)))
+                   ncol=2 * length(colnames(summaries[[1]]$params)))
 
   for (i in 1:length(names(summaries))) {
     x.name <- names(summaries)[i]
     tmp <- summaries[[x.name]]$params
     for (j in 1:length(colnames(tmp))) {
-      simple[i,j] <- ifelse(is.nan(tmp[2,j]), NA, sprintf("%.3f", tmp[2,j]))
+      simple[i, 2*j - 1] <- ifelse(is.nan(tmp[2,j]), NA, sprintf("%.3f", tmp[2,j]))
+      simple[i, 2*j] <- ifelse(is.nan(tmp[6,j]), NA, sprintf("%.3f", tmp[6,j]))
     }
   }
 
-  colnames(simple) <- colnames(summaries[[1]]$params)
+  colnames <- colnames(summaries[[1]]$params)
+  colnames(simple) <- c(rbind(colnames, rep("p", length(colnames))))
   rownames(simple) <- names(summaries)
+
+  # Remove columns if no tests are present
+  simple[simple == "NA"] <- NA
+  simple <- simple[, colSums(!is.na(simple)) > 0]
 
   cat("\n----------------------------------------")
   cat("----------------------------------------\n")
@@ -116,7 +122,10 @@ function (analyses, loop.data) {
   data2 <- c(sapply(analyses, function(x) x$ceiling),
              sapply(analyses, function(x) x$effect),
              sapply(analyses, function(x) x$above),
-             sapply(analyses, p_accuracy, loop.data),
+             sapply(analyses, function(x) x$accuracy),
+             sapply(analyses, function(x) x$fit),
+             sapply(analyses, function(x) x$p),
+             sapply(analyses, function(x) x$p_accuracy),
              sapply(analyses, function(x) NA),
              sapply(analyses, function(x) x$slope),
              sapply(analyses, function(x) x$intercept),
@@ -124,7 +133,7 @@ function (analyses, loop.data) {
              sapply(analyses, function(x) x$ineffs$rel),
              sapply(analyses, function(x) x$ineffs$x),
              sapply(analyses, function(x) x$ineffs$y))
-  mat2 <- t(matrix(data2[names(data2) != "ols"], ncol=11))
+  mat2 <- t(matrix(data2[names(data2) != "ols"], ncol=14))
   colnames(mat2) <- names(analyses)[names(analyses) != "ols"]
   rownames(mat2) <- p_RESULT_NAMES
 
@@ -133,36 +142,19 @@ function (analyses, loop.data) {
   return ( list(global=mat1, params=mat2, names=names) )
 }
 
-p_accuracy <-
-function (analyses, loop.data) {
-  nObservations <- min(length(loop.data$x), length(loop.data$y))
-  return (100 * (nObservations - analyses[["above"]]) / nObservations)
-}
-
-p_pretty_accuracy <-
-function (analyses, loop.data) {
-  nObservations <- min(length(loop.data$x), length(loop.data$y))
-  tmp <- 100 * (nObservations - analyses[["above"]]) / nObservations
-  s = p_pretty_number(tmp, "", 1)
-  if (substr(s, nchar(s), nchar(s)) == "0") {
-    s <- substr(s, 1, nchar(s)-2)
-  }
-
-  if (s == "") {
-    return ("")
-  }
-  return(sprintf("%s%%    ", s))
-}
-
 p_pretty_global <-
 function (global) {
   digits <- p_get_digits(global[3:6, ])
 
-  pretty <- matrix(ncol=1, nrow=6)
+  pretty <- matrix(ncol=ncol(global), nrow=6)
   for (row in 1:6) {
-    pretty[row, 1] <- ifelse(row < 3,
+    pretty[row, 1] <- ifelse(row == 1,
       p_pretty_number(global[row, 1], " ", prec=0, useSpaces=TRUE),
       p_pretty_number(global[row, 1], "", digits, TRUE))
+    if (ncol(global) > 1) {
+      pretty[row, 2] <- ifelse(row == 1, "",
+        p_pretty_number(global[row, 2], "", digits, TRUE))
+    }
   }
 
   colnames(pretty) <- rep(" ", ncol(pretty))
@@ -179,14 +171,25 @@ function (params) {
     for (col in 1:ncol(params)) {
       if (row == 3) {
         pretty[row, col] <- p_pretty_number(params[row, col], prec=0, useSpaces=TRUE)
-      } else if (row == 4) {
+      } else if (row == 4 || row == 5) {
         s <- params[row, col]
-        s = p_pretty_number(s, "", prec=ifelse(s %% 1 == 0, 0, 1))
-        pretty[row, col] <- sprintf("%s%%    ", s)
+        if (!p_is_number(s)) {
+          pretty[row, col] <- ""
+        } else if (s %% 1 == 0) {
+          s = p_pretty_number(s, "", 0)
+          pretty[row, col] <- sprintf("%s%%   ", s)
+        } else {
+          s = p_pretty_number(s, "", 1)
+          pretty[row, col] <- sprintf("%s%% ", s)
+        }
       } else {
         pretty[row, col] <- p_pretty_number(params[row, col])
       }
     }
+  }
+
+  if (all(pretty[7, ] == "")) {
+    pretty <- pretty[-c(6, 7), , drop=FALSE]
   }
 
   return( pretty )

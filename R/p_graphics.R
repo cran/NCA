@@ -17,10 +17,16 @@ function (name1, name2, path=NULL, paper="a4") {
 p_new_window <-
 function (title="", width=7, height=7) {
   # RStudio can't handle multiple windows (yet?)
-  cmd <- commandArgs(trailingOnly=FALSE)[1]
+  cmds <- commandArgs(trailingOnly=FALSE)
+  cmd <- cmds[1]
   if (substr(tolower(cmd), nchar(cmd)-6, nchar(cmd)) == "rstudio" ||
       substr(tolower(cmd), nchar(cmd)-10, nchar(cmd)) == "rstudio.exe") {
     return ()
+  }
+
+  # Don't open windows when on Jupyter Notebooks
+  if (any(grepl("kernel", ignore.case=TRUE, cmds))) {
+    return()
   }
 
   # Don't make windows smaller than 7x7

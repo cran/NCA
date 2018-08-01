@@ -8,13 +8,22 @@ function (uglyName) {
   return( gsub("_", "-", toupper(uglyName)) )
 }
 
+p_is_number <-
+function(number) {
+  if (is.null(number) || is.na(number) || number == "NA" || number == "NN" ||
+      is.infinite(unlist(number, use.names=FALSE))) {
+    return(FALSE)
+  } else {
+    return(TRUE)
+  }
+}
+
 p_pretty_number <- 
 function (uglyNumber, default="", prec=3, useSpaces=FALSE) {
-  if (is.na(uglyNumber) || uglyNumber == "NA" ||
-      is.infinite(uglyNumber) || uglyNumber == "NN") {
+  if (!p_is_number(uglyNumber)) {
     return(default)
-  } 
-  
+  }
+
   if (is.integer(uglyNumber) && !useSpaces) {
     return(sprintf("%d", uglyNumber))
   }
@@ -78,21 +87,34 @@ function (loop.data, peers) {
 
 print.nca_result <-
 function (x, ...) {
-  # nca_analysis sets this to true
-  if (attr(x, "suppress.output")) {
-    message("\nUse nca_output for displaying the output of nca_analysis\n")
-  } else if (sys.call()[[2]] == "x") {
-    p_display_summary_simple(x$summaries)
-    for(plot in x$plots) {
+  p_display_summary_simple(x$summaries)
+  if (attr(x, "show.plots")) {
+    for (plot in x$plots) {
       p_display_plot(plot)
     }
-  } else {
-    nca_output(x)
   }
 }
 
 summary.nca_result <-
-function (object, ...) {
+function (object, columns=NULL, ...) {
+  if (!is.null(columns)) {
+    # Columns can be indexes or names
+    if (!is.numeric(columns)) {
+      columns <- match(c(columns), names(object$summaries))
+      columns <- columns[!is.na(columns)]
+    }
+    else {
+      columns <- columns[columns > 0]
+      columns <- columns[columns < length(object$summaries)]
+    }
+
+    # Make sure user actually selected columns
+    tmp <- object$summaries[columns]
+    if (length(tmp) > 0) {
+      object$summaries <- tmp
+    }
+  }
+
   nca_output(object)
 }
 
@@ -105,4 +127,10 @@ p_get_digits <-
 function (tmp) {
   get_max_nchar <- function (n) { nchar(sub("0+$", "", sprintf("%f", n %% 1))) }
   return( min(3, max(sapply(tmp, get_max_nchar) - 2)) )
+}
+
+p_accuracy <-
+function (loop.data, above) {
+  nObservations <- min(length(loop.data$x), length(loop.data$y))
+  return (100 * (nObservations - above) / nObservations)
 }

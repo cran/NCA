@@ -22,7 +22,7 @@ function (methods) {
     return ( c("ols", "ce_fdh", "cr_fdh") )
   }
 
-  valid_methods <- intersect(methods, ceilings)
+  valid_methods <- intersect(tolower(methods), ceilings)
 
   if (length(valid_methods) == 0) {
     message()
@@ -30,6 +30,7 @@ function (methods) {
   } else if (length(valid_methods) != length(methods)) {
     message()
     warning(sprintf("Ignoring invalid ceiling(s) %s\n\n", setdiff(methods, valid_methods)), call.=FALSE)
+    message()
   }
 
   return ( valid_methods )

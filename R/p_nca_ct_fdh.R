@@ -1,29 +1,33 @@
-p_nca_cr_vrs <-
+p_nca_ct_fdh <-
 function (loop.data, bn.data) {
   x <- loop.data$x
   y <- loop.data$y
+  weighting <- loop.data$weighting
 
   # Find the points on the ceiling ("PEERS")
-  peers <- p_peers(loop.data, vrs=TRUE)
+  peers <- p_peers(loop.data, trend=TRUE)
 
   if (!is.vector(peers) && length(peers) > 2) {
+    # Get the weights if required
+    weights <- if (weighting) p_weights(loop.data, peers)
+
     # Perform OLS through the peers
     x <- peers[,1]
     y <- peers[,2]
-    line <- lm(y~x)
+    line <- lm(y~x, weights=weights)
     
     intercept <- unname(coef(line)["(Intercept)"])
     slope     <- unname(coef(line)["x"])
     ceiling   <- p_ceiling(loop.data, slope, intercept)
     above     <- p_above(loop.data, slope, intercept)
   } else {
+    line      <- NULL
     ceiling   <- 0
     intercept <- NA
     slope     <- NA
-    line      <- NULL
     above     <- 0
   }
-  
+
   effect      <- ceiling / loop.data$scope.area
   accuracy    <- p_accuracy(loop.data, above)
   fit         <- get_fit(ceiling, loop.data$ce_fdh_ceiling)

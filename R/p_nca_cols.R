@@ -23,13 +23,15 @@ function (loop.data, bn.data) {
   slope       <- unname(coef(cols)["x"])
   ceiling     <- p_ceiling(loop.data, slope, intercept)
   effect      <- ceiling / loop.data$scope.area
-  ineffs      <- p_ineffs(loop.data, slope, intercept)
   above       <- p_above(loop.data, slope, intercept)
+  accuracy    <- p_accuracy(loop.data, above)
+  fit         <- get_fit(ceiling, loop.data$ce_fdh_ceiling)
+  ineffs      <- p_ineffs(loop.data, slope, intercept)
   bottleneck  <- p_bottleneck(loop.data, bn.data, slope, intercept)
 
   return(list(line=cols,
               slope=slope, intercept=intercept,
               ceiling=ceiling, effect=effect,
-              ineffs=ineffs, above=above,
-              bottleneck=bottleneck))
+              above=above, accuracy=accuracy, fit=fit,
+              ineffs=ineffs, bottleneck=bottleneck))
 }

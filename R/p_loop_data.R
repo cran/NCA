@@ -1,10 +1,9 @@
 p_create_loop_data <-
-function (x, y, scope, flip.x, flip.y, id.x, weighting) {
+function (x, y, scope, flip.x, flip.y, id.x, qr.tau) {
   names <- c(colnames(x), colnames(y))
   x <- x[id.x]
   scope <- scope[[id.x]]
   flip.x <- flip.x[id.x]
-  weighting <- isTRUE(weighting)
 
   # Remove not complete cases
   tmp <- cbind(x, y)
@@ -17,13 +16,16 @@ function (x, y, scope, flip.x, flip.y, id.x, weighting) {
   if (is.null(scope)) {
     scope.theo <-  scope.emp
   } else {
-    scope.theo <- c(min(scope.emp[1], scope[1]), max(scope.emp[2], scope[2]),
-                    min(scope.emp[3], scope[3]), max(scope.emp[4], scope[4]))
+    scope.theo <- c(min(scope.emp[1], scope[c(1, 2)]),
+                    max(scope.emp[2], scope[c(1, 2)]),
+                    min(scope.emp[3], scope[c(3, 4)]),
+                    max(scope.emp[4], scope[c(3, 4)]))
   }
   scope.area  <- (scope.theo[2] - scope.theo[1]) * (scope.theo[4] - scope.theo[3])
 
   return (list(x=as.matrix(x), y=as.matrix(y), idx=id.x,
                scope.emp=scope.emp, scope.theo=scope.theo,
                scope.area=scope.area, names=names,
-               flip.x=flip.x, flip.y=flip.y, weighting=weighting))
+               flip.x=flip.x, flip.y=flip.y,
+               qr.tau=qr.tau))
 }

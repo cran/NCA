@@ -7,12 +7,14 @@ function (loop.data, ...) {
   slope     <- unname(coef(ols)["x"])
   ceiling   <- p_ceiling(loop.data, slope, intercept)
   effect    <- ceiling / loop.data$scope.area
-  ineffs    <- p_ineffs(loop.data, slope, intercept)
   above     <- p_above(loop.data, slope, intercept)
-  
+  accuracy  <- p_accuracy(loop.data, above)
+  fit       <- 100 * ceiling / loop.data$ce_fdh_ceiling
+  ineffs    <- p_ineffs(loop.data, slope, intercept)
+
   return(list(line=ols,
               slope=slope, intercept=intercept,
               ceiling=ceiling, effect=effect,
-              ineffs=ineffs, above=above,
-              bottleneck=NULL))
+              above=above, accuracy=accuracy, fit=fit,
+              ineffs=ineffs, bottleneck=NULL))
 }

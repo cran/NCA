@@ -8,6 +8,7 @@ function (analyses, loop.data) {
   plot$names <- loop.data$names
   plot$flip.x <- loop.data$flip.x
   plot$flip.y <- loop.data$flip.y
+  plot$conf <- loop.data$conf
   plot$title <- p_generate_title(colnames(plot$x), colnames(plot$y))
   plot$methods <- names(analyses)
   plot$lines <- list()
@@ -55,22 +56,30 @@ function (plot, pdf=FALSE, path=NULL) {
   flip.y <- plot$flip.y
   xlim <- c(plot$scope.theo[1 + flip.x], plot$scope.theo[2 - flip.x])
   ylim <- c(plot$scope.theo[3 + flip.y], plot$scope.theo[4 - flip.y])
+  # Confidence lines might be outside the scope
+  ylim <- p_con_lim(ylim, plot, flip.y)
   plot (plot$x, plot$y, col="blue", xlim=xlim, ylim=ylim, pch=pointType,
         xlab=colnames(plot$x), ylab=tail(plot$names, n=1))
 
   # Plot the scope outline
   p_plot_outline(plot)
+
   # Plot a simple grid, only for development
-  #p_plot_grid(plot, 10)
+  # p_plot_grid(plot, 10)
 
   # Plot the legend before adding the clipping area
   legendParams = list()
   for (method in plot$methods) {
     line_color <- line_colors[[method]]
     line_type  <- line_types[[method]]
-    legendParams$names  = append(legendParams$names,  p_pretty_name(method))
-    legendParams$types  = append(legendParams$types,  line_type)
-    legendParams$colors = append(legendParams$colors, line_color)
+    if (method %in% c("ce_cm_conf", "cr_cm_conf")) {
+      long.name <- paste(p_pretty_name(method), plot$conf)
+      legendParams$names  <- append(legendParams$names,  long.name)
+    } else {
+      legendParams$names  <- append(legendParams$names,  p_pretty_name(method))
+    }
+    legendParams$types <- append(legendParams$types,  line_type)
+    legendParams$colors <- append(legendParams$colors, line_color)
   }
   if (length(legendParams) > 0) {
     legend("topleft", cex=0.7, legendParams$names,
@@ -86,12 +95,15 @@ function (plot, pdf=FALSE, path=NULL) {
     line_color <- line_colors[[method]]
     line_type  <- line_types[[method]]
 
-    if (method %in% c("lh", "ce_vrs", "ce_fdh")) {
+    if (method %in% p_ceilings_step) {
       lines(line[[1]], line[[2]], type="l",
             lty=line_type, col=line_color, lwd=lineWidth)
     } else {
       abline(line, lty=line_type, col=line_color, lwd=lineWidth)
     }
+
+    # Only for development
+    # p_plot_boundaries(line, method)
   }
 
   # Plot the title
@@ -104,6 +116,25 @@ function (plot, pdf=FALSE, path=NULL) {
   }
 }
 
+p_con_lim <-
+function (ylim, plot, flip.y) {
+  if ("ce_cm_conf" %in% plot$methods) {
+    columns <- attr(plot$lines[["ce_cm_conf"]], "columns")
+  } else if (("cr_cm_conf" %in% plot$methods)) {
+    columns <- attr(plot$lines[["cr_cm_conf"]], "columns")
+  } else {
+    return ( ylim )
+  }
+
+  if (!flip.y) {
+    ylim <- c(min(ylim[1], min(columns[5,])), max(ylim[2], max(columns[5,])))
+  } else {
+    ylim <- c(max(ylim[1], max(columns[5,])), min(ylim[2], min(columns[5,])))
+  }
+
+  return ( ylim )
+}
+
 p_plot_outline <-
 function (plot) {
   abline(v=plot$scope.theo[1], lty=2, col="grey")
@@ -112,7 +143,7 @@ function (plot) {
   abline(h=plot$scope.theo[4], lty=2, col="grey")
 }
 
-p_plot_grid <-
+p_plot_grid_fixed <-
 function (plot, size) {
   start <- size * ceiling(plot$scope.theo[1] / size)
   while (start < plot$scope.theo[2]) {
@@ -126,3 +157,36 @@ function (plot, size) {
   }
 }
 
+p_plot_grid <-
+function (plot, size) {
+  step <- (plot$scope.theo[2] - plot$scope.theo[1]) / size
+  start <- plot$scope.theo[1]
+  while (start < plot$scope.theo[2]) {
+    abline(v=start, lty=1, col="grey")
+    start <- start + step
+  }
+
+  step <- (plot$scope.theo[4] - plot$scope.theo[3]) / size
+  start <- plot$scope.theo[3]
+  while (start < plot$scope.theo[4]) {
+    abline(h=start, lty=1, col="grey")
+    start <- start + step
+  }
+}
+
+p_plot_boundaries <-
+function (line, method) {
+  columns <- attr(line, "columns")
+  if (is.null(columns)) {
+    return()
+  }
+  # Plot the column boundaries
+  for (col in 1:ncol(columns)) {
+    abline(v=columns[2, col], lty=2, col="grey")
+  }
+  abline(v=columns[3, col], lty=2, col="grey")
+  # Plot the points used for the cr_cm_conf
+  if (method == "cr_cm_conf") {
+    points(t(columns[4:5,]), col="red")
+  }
+}

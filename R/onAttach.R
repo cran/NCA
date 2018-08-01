@@ -21,7 +21,7 @@
     msg12  <- "A quick start guide can be found here:"
     msg13  <- "http://repub.eur.nl/pub/78323/"
     msg14 <- "or"
-    msg15 <- "http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2624981"
+    msg15 <- "https://ssrn.com/abstract=2624981"
 
     msg16 <- "For general information about NCA see :"
     msg17 <- "http://www.erim.nl/nca"
