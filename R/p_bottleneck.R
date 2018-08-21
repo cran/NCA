@@ -14,7 +14,7 @@ function (loop.data, bn.data, slope, intercept) {
 
   if (is.na(intercept) || is.na(slope)) {
     mpx <- p_mpx_single_peer(bn.data, theo, flip.x)
-  } else{
+  } else {
     mpx <- (bn.data$mpy - intercept) / slope
     if (bn.data$cutoff == 0) {
       mpx [ mpx < theo[1] ] <- ifelse(flip.x, NA, -Inf)
@@ -45,14 +45,10 @@ function (loop.data, bn.data, peers, type) {
   flip.y      <- loop.data$flip.y
   precision.x <- ifelse(bn.data$bn.x.id %in% c(1, 2, 4), 1, 3)
 
-  if (is.vector(peers) || length(peers) == 2) {
-    mpx <- p_mpx_single_peer_ce(peers, bn.data, theo, flip.x)
-  } else {
-    if (type == "fdh") {
-      mpx <- p_bottleneck_fdh(bn.data, peers, theo, flip.x, flip.y)
-    } else if (type == "vrs") {
-      mpx <- p_bottleneck_vrs(bn.data, peers, theo, flip.x, flip.y)
-    }
+  if (type == "fdh") {
+    mpx <- p_bottleneck_fdh(bn.data, peers, theo, flip.x, flip.y)
+  } else if (type == "vrs") {
+    mpx <- p_bottleneck_vrs(bn.data, peers, theo, flip.x, flip.y)
   }
 
   nn.value <- p_nn_value(mpx, loop.data, bn.data)
@@ -87,12 +83,14 @@ function (bn.data, peers, theo, flip.x, flip.y) {
     }
   }
 
-  if (bn.data$cutoff == 0) {
-    mpx [ mpx <= theo[1] ] <- ifelse(flip.x, NA, -Inf)
-    mpx [ mpx >= theo[2] ] <- ifelse(flip.x, Inf, NA)
-  } else if (bn.data$cutoff == 1) {
-    mpx [ mpx <= theo[1] ] <- theo[1]
-    mpx [ mpx >= theo[2] ] <- theo[2]
+  if (is.element(bn.data$cutoff, c(0,1))) {
+    if (flip.x) {
+      mpx [ mpx < theo[1] ] <- ifelse(bn.data$cutoff == 0, NA, theo[1])
+      mpx [ mpx >= theo[2] ] <- ifelse(bn.data$cutoff == 0, Inf, theo[2])
+    } else {
+      mpx [ mpx <= theo[1] ] <- ifelse(bn.data$cutoff == 0, -Inf, theo[1])
+      mpx [ mpx > theo[2] ] <- ifelse(bn.data$cutoff == 0, NA, theo[2])
+    }
   }
 
   return( mpx )
@@ -148,22 +146,6 @@ function (bn.data, theo, flip.x) {
     mpx <- matrix(Inf, nrow=length(mpy), ncol=1)
   } else {
     mpx <- matrix(theo[1 + flip.x], nrow=length(mpy), ncol=1)
-  }
-  return( mpx )
-}
-
-p_mpx_single_peer_ce <-
-function (peers, bn.data, theo, flip.x) {
-  mpy <- bn.data$mpy
-  cutoff <- bn.data$cutoff
-
-  # if peers is a vector there is only one peer
-  if (cutoff == 0) {
-    mpx <- matrix(Inf, nrow=length(mpy), ncol=1)
-  } else if (cutoff == 1) {
-    mpx <- matrix(theo[1 + flip.x], nrow=length(mpy), ncol=1)
-  } else if (cutoff == 2) {
-    mpx <- matrix(peers[1, 1], nrow=length(mpy), ncol=1)
   }
   return( mpx )
 }
