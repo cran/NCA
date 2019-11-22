@@ -1,1 +1,141 @@
-p_bottleneck_data <-function (x, y, scope, flip.y, ceilings, bottleneck.x, bottleneck.y, steps, step.size, cutoff) {  bn.x <- p_validate_bottleneck(bottleneck.x, "x")  bn.y <- p_validate_bottleneck(bottleneck.y, "y")  bn.x.id <- p_bottleneck_id(bn.x)  bn.y.id <- p_bottleneck_id(bn.y)  bottleneck.xy <- p_mp_mpy(y, scope, steps, step.size, bottleneck.y, flip.y)  mp <- as.data.frame(bottleneck.xy[[1]])  mpy <- bottleneck.xy[[2]]  attr(mp, "bn.x") <- bn.x  attr(mp, "bn.y") <- bn.y  attr(mp, "bn.y.id") <- bn.y.id  attr(mp, "cutoff") <- cutoff  bottlenecks <- list()  for (ceil in setdiff(ceilings, p_no_bottleneck)) {    bottlenecks[[ceil]]          <- mp  }  return( list(    bottlenecks=bottlenecks,    bn.x=bn.x,    bn.y=bn.y,    bn.x.id=bn.x.id,    bn.y.id=bn.y.id,    mpy=mpy,    cutoff=cutoff,    steps=steps  ) )}p_mp_mpy <-function (y, scope, steps, step.size, bottleneck.y, flip.y) {  # Try to get the low/high values from the scope  py.low <- scope[[1]][3]  py.high <- scope[[1]][4]  bn.y.id <- p_bottleneck_id(bottleneck.y)  # Scope might be NULL  if (is.null(py.low) || is.null(py.high)) {    py.low <- min(y, na.rm=TRUE)    py.high <- max(y, na.rm=TRUE)  } else {    py.low <- min(y, py.low)    py.high <- max(y, py.high)  }  # User want from zero  if (p_bottleneck_id(bottleneck.y) == 2) {    py.low <- 0  }  # Get the values  if (is.null(step.size)) {    step <- (py.high - py.low) / steps    values <- seq(py.low, py.high, by=step)  } else {    values <- c()    start <- py.low    if (bn.y.id %in% c(1, 2)) {      step.size <- step.size * (py.high - py.low) / 100      while (start <= py.high) {        values <- c(values, start)        start <- start + step.size      }    } else {      while (start <= py.high) {        values <- c(values, start)        start <- floor((start + step.size) / step.size) * step.size      }    }    if (abs(values[length(values)] - py.high) > 1E-6) {      values <- c(values, py.high)    }  }  # User wants percentiles  if (bn.y.id == 4) {    # Normalize values to [0, 1]    tmp <- values - py.low    tmp <- tmp / max(tmp)    mpy <- matrix(quantile(c(py.low, py.high), tmp), ncol=1)  } else {    if (flip.y) {      mpy <- matrix(rev(values), ncol=1)    } else {      mpy <- matrix(values, ncol=1)    }  }  # Define the bottleneck table  mp  <- matrix(mpy, nrow=length(mpy), ncol=1)  # Display Ys as percentage or percentiles  if (p_bottleneck_id(bottleneck.y) %in% c(1, 2)) {    mp <- 100 * (mp - py.low) / (py.high - py.low)  } else if (p_bottleneck_id(bottleneck.y) == 4) {    # Normalize values to [0, 100]    tmp <- values - py.low    tmp <- 100 * tmp / max(tmp)    mp <- matrix(tmp, ncol=1)  }  colnames(mp) <- colnames(y)  colnames(mpy) <- colnames(y)  return( list(mp, mpy) )}p_bottleneck_options <- list(  "percentage.range",  "percentage.max",  "actual",  "percentile")p_validate_bottleneck <-function (option, x_or_y) {  if (is.na(match(option, p_bottleneck_options))) {    message(paste0("\nBottleneck option '", option, "' for ", x_or_y,      " is not valid, using '", p_bottleneck_options[[1]], "'"))    return(p_bottleneck_options[[1]])  }  return(option)}p_bottleneck_id <-function (option) {  if (is.na(match(option, p_bottleneck_options))) {    return(1)  }  return(match(option, p_bottleneck_options))}
+p_bottleneck_data <-
+function (x, y, scope, flip.y, ceilings, bottleneck.x, bottleneck.y, steps, step.size, cutoff) {
+  bn.x <- p_validate_bottleneck(bottleneck.x, "x")
+  bn.y <- p_validate_bottleneck(bottleneck.y, "y")
+  bn.x.id <- p_bottleneck_id(bn.x)
+  bn.y.id <- p_bottleneck_id(bn.y)
+
+  bottleneck.xy <- p_mp_mpy(y, scope, steps, step.size, bottleneck.y, flip.y)
+  mp <- as.data.frame(bottleneck.xy[[1]])
+  mpy <- bottleneck.xy[[2]]
+
+  attr(mp, "bn.x") <- bn.x
+  attr(mp, "bn.y") <- bn.y
+  attr(mp, "bn.y.id") <- bn.y.id
+  attr(mp, "cutoff") <- cutoff
+
+  bottlenecks <- list()
+  for (ceil in setdiff(ceilings, p_no_bottleneck)) {
+    bottlenecks[[ceil]]          <- mp
+  }
+
+  return( list(
+    bottlenecks=bottlenecks,
+    bn.x=bn.x,
+    bn.y=bn.y,
+    bn.x.id=bn.x.id,
+    bn.y.id=bn.y.id,
+    mpy=mpy,
+    cutoff=cutoff,
+    steps=steps
+  ) )
+}
+
+p_mp_mpy <-
+function (y, scope, steps, step.size, bottleneck.y, flip.y) {
+  # Try to get the low/high values from the scope
+  py.low <- scope[[1]][3]
+  py.high <- scope[[1]][4]
+  bn.y.id <- p_bottleneck_id(bottleneck.y)
+
+  # Scope might be NULL
+  if (is.null(py.low) || is.null(py.high)) {
+    py.low <- min(y, na.rm=TRUE)
+    py.high <- max(y, na.rm=TRUE)
+  } else {
+    py.low <- min(y, py.low)
+    py.high <- max(y, py.high)
+  }
+
+  # User want from zero
+  if (p_bottleneck_id(bottleneck.y) == 2) {
+    py.low <- 0
+  }
+
+  # Get the values
+  if (bn.y.id == 4) {
+    if (is.null(step.size) || step.size <= 0) {
+      probs <- seq(0, 1, length.out=steps + 1)
+    } else {
+      probs <- seq(0, 1, by=min(1000, step.size / 100))
+    }
+    values <- quantile(y[[1]], probs, na.rm=TRUE)
+  }
+  else if (is.null(step.size) || step.size <= 0) {
+    if (steps < 1) {
+      steps <- 10
+    }
+    step <- (py.high - py.low) / steps
+    values <- seq(py.low, py.high, by=step)
+  } else {
+    values <- c()
+    start <- py.low
+
+    if (bn.y.id %in% c(1, 2)) {
+      step.size <- step.size * (py.high - py.low) / 100
+      while (start <= py.high) {
+        values <- c(values, start)
+        start <- start + step.size
+      }
+    } else {
+      while (start <= py.high) {
+        values <- c(values, start)
+        start <- floor((start + step.size) / step.size) * step.size
+      }
+    }
+
+    if (abs(values[length(values)] - py.high) > 1E-6) {
+      values <- c(values, py.high)
+    }
+  }
+
+  if (flip.y) {
+    mpy <- matrix(rev(values), ncol=1)
+  } else {
+    mpy <- matrix(values, ncol=1)
+  }
+
+  # Define the bottleneck table
+  mp  <- matrix(mpy, nrow=length(mpy), ncol=1)
+
+  # Display Ys as percentage or percentiles
+  if (p_bottleneck_id(bottleneck.y) %in% c(1, 2)) {
+    mp <- 100 * (mp - py.low) / (py.high - py.low)
+  } else if (p_bottleneck_id(bottleneck.y) == 4) {
+    # Normalize values to [0, 100]
+    tmp <- values - py.low
+    tmp <- 100 * tmp / max(tmp)
+    mp <- matrix(tmp, ncol=1)
+  }
+
+  colnames(mp) <- colnames(y)
+  colnames(mpy) <- colnames(y)
+
+  return( list(mp, mpy) )
+}
+
+p_bottleneck_options <- list(
+  "percentage.range",
+  "percentage.max",
+  "actual",
+  "percentile"
+)
+
+p_validate_bottleneck <-
+function (option, x_or_y) {
+  if (is.na(match(option, p_bottleneck_options))) {
+    message(paste0("\nBottleneck option '", option, "' for ", x_or_y,
+      " is not valid, using '", p_bottleneck_options[[1]], "'"))
+    return(p_bottleneck_options[[1]])
+  }
+  return(option)
+}
+
+p_bottleneck_id <-
+function (option) {
+  if (is.na(match(option, p_bottleneck_options))) {
+    return(1)
+  }
+  return(match(option, p_bottleneck_options))
+}
+

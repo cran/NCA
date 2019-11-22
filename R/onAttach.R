@@ -11,15 +11,18 @@
 
     msg5  <- "This package is based on:"
     msg6  <- "Dul, J. (2016) \"Necessary Condition Analysis (NCA):"
-    msg7  <- "Logic and Methodology of 'Necessary but Not Sufficient' Causality.'"
+    msg7  <- "Logic and Methodology of 'Necessary but Not Sufficient' Causality.\""
     msg8  <- "Organizational Research Methods 19(1), 10-52"
     msg9  <- "http://orm.sagepub.com/content/19/1/10"
+    msg18 <- 'Dul, J. (2020) "Conducting Necessary Condition Analysis"'
+    msg19 <- 'SAGE Publications'
+    msg20 <- 'ISBN: 9781526460141'
 
-    msg10  <- "A BibTeX entry is provided by:"
-    msg11  <- "citation('NCA')"
+    msg10 <- "A BibTeX entry is provided by:"
+    msg11 <- "citation('NCA')"
 
-    msg12  <- "A quick start guide can be found here:"
-    msg13  <- "http://repub.eur.nl/pub/78323/"
+    msg12 <- "A quick start guide can be found here:"
+    msg13 <- "http://repub.eur.nl/pub/78323/"
     msg14 <- "or"
     msg15 <- "https://ssrn.com/abstract=2624981"
 
@@ -37,6 +40,11 @@
                           strwrap(msg7, indent = 2, exdent = 2), "\n",
                           strwrap(msg8, indent = 2, exdent = 2), "\n",
                           strwrap(msg9, indent = 2, exdent = 2), "\n",
+                          "\n",
+                          "and\n",
+                          strwrap(msg18, indent = 2, exdent = 2), "\n",
+                          strwrap(msg19, indent = 2, exdent = 2), "\n",
+                          strwrap(msg20, indent = 2, exdent = 2), "\n",
                           "\n",
                           strwrap(msg10, indent = 0, exdent = 2), "\n",
                           strwrap(msg11, indent = 2, exdent = 2), "\n",

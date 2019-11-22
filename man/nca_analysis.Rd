@@ -5,7 +5,7 @@
 \usage{nca_analysis(data, x, y, ceilings=c('ols', 'ce_fdh', 'cr_fdh'),
              flip.x=FALSE, flip.y=FALSE, scope=NULL,
              bottleneck.x='percentage.range', bottleneck.y='percentage.range',
-             steps=10, step.size=NULL, cutoff=0, qr.tau=0.95,
+             steps=10, step.size=NULL, cutoff=0, qr.tau=0.95, effect_aggregation = c(1),
              test.rep=0, test.p_confidence=0.95, test.p_threshold=0)}
 \arguments{
 \item{data}{dataframe with columns of the variables}
@@ -30,6 +30,7 @@
 \item{cutoff}{display calculated x,y values that are lower/higher than lowest/highest observed x,y values in the bottleneck table as:\cr
 0 : NN (not necessary) and NA (not available)\cr 1 : lowest/highest observed values\cr 2 : calculated values}\cr
 \item{qr.tau}{define the qr tau (between 0 and 1), default 0.95}\cr
+\item{effect_aggregation}{define the corners to aggregate into the effect size. 1 is upper-left and is always selected, 2 is upper-right, 3 is lower-left and 4 is lower-right}\cr
 \item{test.rep}{number of resamples in the approximate permutation test}\cr
 \item{test.p_confidence}{confidence level of the estimated p-value \cr
 will be used to calculate the p-accuracy for a given number of samples (test.rep), default 0.95}\cr
@@ -98,8 +99,8 @@ model <- nca_analysis(data, c(1, 2), 3, cutoff=2)
 
 # To run tests, the test.rep needs to be larger than 0
 # Optionally the p_confidence (default 0.95) and the p_threshold (default 0) can be set
-# The progress for each independent variable is shown
-model <- nca_analysis(data, c(1, 2), 3, test.rep=1000, test.p_confidence=0.9, test.p_threshold=0.05)
+\donttest{model <- nca_analysis(data, c(1, 2), 3, test.rep=1000, test.p_confidence=0.9, test.p_threshold=0.05)}
+\dontshow{model <- nca_analysis(data, c(1, 2), 3, test.rep=100, test.p_confidence=0.9, test.p_threshold=0.05)}
 
 # The output of the tests can be shown via nca_output with test=TRUE
 nca_output(model, test=TRUE)

@@ -25,7 +25,9 @@ function (loop.data, vrs=FALSE, trend=FALSE, inflate=FALSE, limit=FALSE) {
       y.min <- y.sorted[i]
 
       # If new X is equal to last peers X, replace last peers Y
-      if (x.min == peers[length(peers) - 1]) {
+      max.diff <- min(abs(x.min), abs(peers[length(peers) - 1][[1]])) / 1e6
+      diff <- abs(x.min - peers[length(peers) - 1][[1]])
+      if (diff <= max.diff) {
         peers <- head(peers, -2)
         rownames <- head(rownames, -1)
       }

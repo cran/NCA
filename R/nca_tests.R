@@ -1,5 +1,7 @@
+globalVariables('i')
+
 p_test <-
-function (analyses, loop.data, test.params) {
+function (analyses, loop.data, test.params, effect_aggregation) {
   if (test.params$rep < 1) {
     return (NULL)
   }
@@ -15,6 +17,14 @@ function (analyses, loop.data, test.params) {
   # But not for OLS
   ceilings <- names(analyses)[names(analyses) != "ols"]
 
+  # test.rep can never be larger than n!, only test for small h's
+  # fact(15) is 1e12, if user chooses that for test.rep he's got other problems
+  if (h < 16 && test.params$rep > factorial(h)) {
+    test.params$rep <- factorial(h)
+    fmt = "\nLowered test.rep to %s as it can not be larger than N!\n"
+    cat(sprintf(fmt, test.params$rep))
+  }
+
   # Ignore errors resulting from sampling
   old.warning <- getOption("warn")
   options(warn = -1)
@@ -24,22 +34,37 @@ function (analyses, loop.data, test.params) {
   x.name <- paste0(strtrim(colnames(loop.data$x), 25),
     ifelse(nchar(colnames(loop.data$x)) > 25, "...", ""))
 
-  fmt <- "Doing :current of :total samples for :name"
-  pb <- progress_bar$new(format=fmt, total=test.params$rep, width=80)
-  for (i in 1:test.params$rep) {
-    pb$tick(tokens = list(name=x.name))
-
-    sample <- sample(1 : h, h, replace = FALSE)
-    loop.data$y <- y_org[sample]
-
-    for (ceiling in ceilings) {
-      analysis <- do.call(paste0("p_nca_", ceiling), list(loop.data, NULL))
-      if (! is.na(analysis$effect)) {
-        effect.sims[[ceiling]] <- c(effect.sims[[ceiling]], analysis$effect)
-      }
-    }
+  # Create a unique list of samples
+  samples <- foreach (i=1:test.params$rep) %dopar% {
+    set.seed(i)
+    sample(1:h, h, replace = FALSE)
   }
-  cat(paste("\rDone test for", x.name, "\n"))
+
+  for (ceiling in ceilings) {
+    cat(paste("Do test for   :", ceiling, "-", x.name))
+
+    effect.sims[[ceiling]] <- foreach (sample=iter(samples)) %dopar% {
+      loop.data$y <- y_org[unlist(sample)]
+
+      # We need to make sure ce_cm_conf (if present) comes before cr_cm_conf
+      if ("ce_cm_conf" %in% ceilings) {
+        analisys_ce_cm_conf <- p_nca_wrapper("ce_cm_conf", loop.data, NULL, effect_aggregation)
+        loop.data$ce_cm_conf_columns <- attr(analisys_ce_cm_conf$line, "columns")
+      }
+      if (ceiling == "ce_cm_conf") {
+        analysis <- analisys_ce_cm_conf
+      } else {
+        analysis <- p_nca_wrapper(ceiling, loop.data, NULL, effect_aggregation)
+      }
+      return (analysis$effect)
+    }
+
+    # Convert to a vector, remove NA
+    effect.sims[[ceiling]] <- unlist(effect.sims[[ceiling]])
+    effect.sims[[ceiling]] <- effect.sims[[ceiling]][!is.na(effect.sims[[ceiling]])]
+
+    cat(paste("\rDone test for :", ceiling, "-", x.name, "\n"))
+  }
 
   # Start caring about errors again
   options(warn = old.warning)
@@ -47,6 +72,11 @@ function (analyses, loop.data, test.params) {
   for (ceiling in ceilings) {
     observed <- analyses[[ceiling]]$effect
     data <- effect.sims[[ceiling]]
+
+    if (is.null(data)) {
+      fmt <- "No permutation test for %s on %s\n"
+      cat(sprintf(fmt, loop.data$names[1], ceiling))
+    }
 
     # Add threshold- and P-value for displaying in summary
     threshold.value <- as.numeric(quantile(sort(data), 1 - test.params$p_threshold))
@@ -101,6 +131,11 @@ function (ceiling, ceiling_test, pdf=FALSE, path=NULL) {
   threshold.value <- ceiling_test$threshold.value
   p_threshold <- ceiling_test$test.params$p_threshold
   names <- ceiling_test$names
+
+  # All Y-values are equal
+  if (is.null(data)) {
+    return(NULL)
+  }
 
   bin.count <- 30
   x.low <- - 0.05

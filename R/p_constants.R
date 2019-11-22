@@ -34,3 +34,4 @@ line.types      <- list(ols=1,              lh=2,                 cols=3,
 
 line.width      <- 1.5
 point.type      <- 21
+point.color     <- "blue"

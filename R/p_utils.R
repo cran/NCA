@@ -10,8 +10,14 @@ function (uglyName) {
 
 p_is_number <-
 function(number) {
-  if (is.null(number) || is.na(number) || number == "NA" || number == "NN" ||
-      is.infinite(unlist(number, use.names=FALSE))) {
+  if (typeof(number) == "list") {
+    un_list = unlist(number, use.names=FALSE)
+    if (is.null(un_list) || is.infinite(un_list)) {
+      return (FALSE)
+    }
+  }
+
+  if (is.null(number) || is.na(number) || number == "NA" || number == "NN") {
     return(FALSE)
   } else {
     return(TRUE)
@@ -43,6 +49,7 @@ function (uglyNumber, default="", prec=3, useSpaces=FALSE) {
   }
 
   # We hate to see -0.0
+  uglyNumber <- unlist(uglyNumber, use.names=FALSE)[1]
   uglyNumber[abs(uglyNumber) < 0.1 ^ max(1, prec)] <- 0
 
   return(sprintf(fmt, uglyNumber, paste(rep(" ", nSpaces), collapse='')))

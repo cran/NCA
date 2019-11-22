@@ -32,15 +32,19 @@ function (plot, pdf=FALSE, path=NULL) {
   # Append default for missing values
   line_colors <- append(line_colors, line.colors)
   line_types <- append(line_types, line.types)
-  # The same for line width and point types
+  # The same for line width and point-type/-color
   lineWidth <- mget("line.width", envir=.GlobalEnv, ifnotfound="notfound")[[1]]
   if (!is.numeric(lineWidth)) {
     lineWidth <- line.width
   }
-  pointType <- mget("point.type", envir=.GlobalEnv, ifnotfound="notfound")[[1]]
-  if (pointType == "notfound") {
-    pointType <- point.type
+  point_type <- mget("point.type", envir=.GlobalEnv, ifnotfound="notfound")[[1]]
+  if (!is.numeric(point_type)) {
+    point_type <- point.type
   }
+  point_color <- mget("point.color", envir=.GlobalEnv, ifnotfound="notfound")[[1]]
+  point_color <- tryCatch({
+      col2rgb(point_color); point_color
+  }, error = function(e) return(point.color) )
 
   # Open new window or PDF
   if (pdf) {
@@ -58,7 +62,8 @@ function (plot, pdf=FALSE, path=NULL) {
   ylim <- c(plot$scope.theo[3 + flip.y], plot$scope.theo[4 - flip.y])
   # Confidence lines might be outside the scope
   ylim <- p_con_lim(ylim, plot, flip.y)
-  plot (plot$x, plot$y, col="blue", xlim=xlim, ylim=ylim, pch=pointType,
+  plot (plot$x, plot$y, pch=point_type, col=point_color,
+        xlim=xlim, ylim=ylim,
         xlab=colnames(plot$x), ylab=tail(plot$names, n=1))
 
   # Plot the scope outline
@@ -99,7 +104,18 @@ function (plot, pdf=FALSE, path=NULL) {
       lines(line[[1]], line[[2]], type="l",
             lty=line_type, col=line_color, lwd=lineWidth)
     } else {
-      abline(line, lty=line_type, col=line_color, lwd=lineWidth)
+      # LH line
+      is_finite = TRUE
+      if (typeof(line) == "double" && !all(is.finite(line))) {
+        is_finite = FALSE
+      }
+      # 'LM' style line
+      else if (typeof(line) == "list" && !all(is.finite(line$coefficients))) {
+        is_finite = FALSE
+      }
+      if (is_finite) {
+        abline(line, lty=line_type, col=line_color, lwd=lineWidth)
+      }
     }
 
     # Only for development

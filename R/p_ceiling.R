@@ -161,3 +161,29 @@ function (loop.data, peers) {
 
   return( ceiling )
 }
+
+# TODO Is this the correct place?
+p_nca_wrapper <-
+function (ceiling, loop.data, bn.data, effect_aggregation) {
+  analysis <- do.call(paste0("p_nca_", ceiling), list(loop.data, bn.data))
+
+  loop.data$flip.x  <- !loop.data$flip.x
+  if (2 %in% effect_aggregation) {
+    tmp_analysis <- do.call(paste0("p_nca_", ceiling), list(loop.data, bn.data))
+    analysis$effect <- analysis$effect + tmp_analysis$effect
+  }
+
+  loop.data$flip.y  <- !loop.data$flip.y
+  if (4 %in% effect_aggregation) {
+    tmp_analysis <- do.call(paste0("p_nca_", ceiling), list(loop.data, bn.data))
+    analysis$effect <- analysis$effect + tmp_analysis$effect
+  }
+
+  loop.data$flip.x  <- !loop.data$flip.x
+  if (3 %in% effect_aggregation) {
+    tmp_analysis <- do.call(paste0("p_nca_", ceiling), list(loop.data, bn.data))
+    analysis$effect <- analysis$effect + tmp_analysis$effect
+  }
+
+  return ( analysis )
+}

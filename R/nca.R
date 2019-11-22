@@ -14,7 +14,7 @@ nca_analysis <-
 function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
           flip.x=FALSE, flip.y=FALSE, scope=NULL,
           bottleneck.x='percentage.range', bottleneck.y='percentage.range',
-          steps=10, step.size=NULL, cutoff=0, qr.tau=0.95,
+          steps=10, step.size=NULL, cutoff=0, qr.tau=0.95, effect_aggregation=c(1),
           test.rep=0, test.p_confidence=0.95, test.p_threshold=0) {
 
   # Validate and clean data
@@ -32,6 +32,9 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
   # Validate scope
   scope <- p_scope(x, scope)
 
+  # Validate effect size aggregation
+  effect_aggregation <- intersect(c(2, 3,4), effect_aggregation)
+
   # Data object for bottlenecks
   bn.data <- p_bottleneck_data(data.x, data.y, scope, flip.y, ceilings,
                                bottleneck.x, bottleneck.y, steps, step.size, cutoff)
@@ -43,6 +46,15 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
   peers <- list()
   test.time <- 0
 
+  # Create cluster for parallisation if needed
+  if (detectCores() > 1 &&
+      length(ceilings) * length(data.x) * test.rep > 6000) {
+      if (grepl("windows", tolower(.Platform$OS.type))) {
+        cat("Preparing the analysis, this might take a few seconds...\n")
+      }
+      registerDoParallel(detectCores())
+  }
+
   # Loop the independent varaibles
   for (id.x in 1:length(data.x)) {
     loop.data <- p_create_loop_data(data.x, data.y, scope, flip.x, flip.y, id.x, qr.tau)
@@ -50,14 +62,14 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
     x.name <- loop.data$names[id.x]
 
     # We need this for the 'FIT' number, regardless of user preference
-    analisys_ce_fdh <- p_nca_ce_fdh(loop.data, bn.data)
+    analisys_ce_fdh <- p_nca_wrapper("ce_fdh", loop.data, bn.data, effect_aggregation)
     loop.data$ce_fdh_ceiling <- analisys_ce_fdh$ceiling
     loop.data$ce_fdh_peers <- analisys_ce_fdh$peers
     analisys_ce_fdh$peers <- NULL
 
     # We need to make sure ce_cm_conf (if present) comes before cr_cm_conf
     if ("ce_cm_conf" %in% ceilings) {
-      analisys_ce_cm_conf <- p_nca_ce_cm_conf(loop.data, bn.data)
+      analisys_ce_cm_conf <- p_nca_wrapper("ce_cm_conf", loop.data, bn.data, effect_aggregation)
       loop.data$ce_cm_conf_columns <- attr(analisys_ce_cm_conf$line, "columns")
     }
 
@@ -68,7 +80,7 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
       } else if (ceiling == "ce_cm_conf") {
         analysis <- analisys_ce_cm_conf
       } else {
-        analysis <- do.call(paste0("p_nca_", ceiling), list(loop.data, bn.data))
+        analysis <- p_nca_wrapper(ceiling, loop.data, bn.data, effect_aggregation)
       }
       if (!is.null(analysis$bottleneck) && !(ceiling %in% p_no_bottleneck)) {
         bn.data$bottlenecks[[ceiling]][x.name] <- analysis$bottleneck
@@ -80,7 +92,7 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
     test.params <- list(rep=test.rep,
                         p_confidence=test.p_confidence,
                         p_threshold=test.p_threshold)
-    test_tuple <- p_test(analyses, loop.data, test.params)
+    test_tuple <- p_test(analyses, loop.data, test.params, effect_aggregation)
     if (!is.null(test_tuple)) {
       tests[[x.name]] <- test_tuple$test
       test.time <- test.time + test_tuple$test.time
@@ -101,6 +113,9 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
     summaries[[x.name]] <- p_summary(analyses, loop.data)
     peers[[x.name]] <- p_peers(loop.data)
   }
+
+  # Shut down cluster for parallisation
+  stopImplicitCluster()
 
   model <- list(plots=plots,
                 summaries=summaries,

@@ -5,7 +5,7 @@ function (bottlenecks, title="Bottleneck", pdf=FALSE, path=NULL) {
     p_new_pdf("bottlenecks", colnames(bottlenecks[[1]])[1], path, paper="A4r")
 
     for (method in names(bottlenecks)) {
-      p_display_table_pdf(bottlenecks[[method]], p_pretty_name(method), title, path)
+      p_display_table_pdf(bottlenecks[[method]], p_pretty_name(method), title)
     }
 
    # Close the file
@@ -19,7 +19,7 @@ function (bottlenecks, title="Bottleneck", pdf=FALSE, path=NULL) {
 }
 
 p_display_table_pdf <-
-function (bn, method, title, path) {
+function (bn, method, title) {
   names <- colnames(bn)
   bn.x <- attr(bn, "bn.x")
   bn.y <- attr(bn, "bn.y")
@@ -28,24 +28,25 @@ function (bn, method, title, path) {
   x.length <- ncol(bn) - 1
   cutoff <- attr(bn, "cutoff")
 
-  # Set y precision
-  if (bn.y.id %in% c(1, 2, 4)) {
-    precision.y <- ifelse((100 / (rows-1)) %% 1 == 0, 0, 1)
-  } else {
-    precision.y <- 3
-  }
-
   # TODO Weird bug : can't replace colnames in bn
   tmp <- matrix(nrow=rows, ncol=x.length)
   for (i in 1:x.length) {
     tmp[, i] <- bn[,i+1]
   }
-
   if (length(tmp) == 0) {
     return()
   }
+
+  # Set y precision
+  if (bn.y.id %in% c(1, 2)) {
+    digits <- ifelse((100 / (rows-1)) %% 1 == 0, 0, 1)
+  } else if (bn.y.id == 4) {
+    digits <- 1
+  } else {
+    digits <- p_get_digits(bn[,1])
+  }
   col.names <- as.character(c(1:x.length))
-  row.names <- p_pretty_number(bn[,1], "", precision.y)
+  row.names <- sapply(bn[,1], p_pretty_number, "", digits)
 
   if (!is.null(title) && title != "") {
     title <- paste(title, method, ":", names[1])
@@ -86,9 +87,20 @@ function (bn, method, title) {
   for (i in 1:x.length) {
     tmp[, i] <- bn[,i+1]
   }
-  digits <- min(3, p_get_digits(bn[,1]))
+  if (length(tmp) == 0) {
+    return()
+  }
+
+  # Set y precision
+  if (bn.y.id %in% c(1, 2)) {
+    digits <- ifelse((100 / (rows-1)) %% 1 == 0, 0, 1)
+  } else if (bn.y.id == 4) {
+    digits <- 1
+  } else {
+    digits <- p_get_digits(bn[,1])
+  }
   colnames(tmp) <- as.character(c(1:x.length))
-  rownames(tmp) <- p_pretty_number(bn[,1], "", digits, TRUE)
+  rownames(tmp) <- sapply(bn[,1], p_pretty_number, "", digits, TRUE)
 
   # Display header
   fmt <- sprintf(" %%-%ds", max(nchar(names)))
