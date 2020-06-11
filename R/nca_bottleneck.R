@@ -40,8 +40,6 @@ function (bn, method, title) {
   # Set y precision
   if (bn.y.id %in% c(1, 2)) {
     digits <- ifelse((100 / (rows-1)) %% 1 == 0, 0, 1)
-  } else if (bn.y.id == 4) {
-    digits <- 1
   } else {
     digits <- p_get_digits(bn[,1])
   }
@@ -94,8 +92,6 @@ function (bn, method, title) {
   # Set y precision
   if (bn.y.id %in% c(1, 2)) {
     digits <- ifelse((100 / (rows-1)) %% 1 == 0, 0, 1)
-  } else if (bn.y.id == 4) {
-    digits <- 1
   } else {
     digits <- p_get_digits(bn[,1])
   }

@@ -84,7 +84,7 @@ function (summaries) {
 
   # Remove columns if no tests are present
   simple[simple == "NA"] <- NA
-  simple <- simple[, colSums(!is.na(simple)) > 0]
+  colnames(simple)[colSums(!is.na(simple)) == 0] <- ''
 
   cat("\n----------------------------------------")
   cat("----------------------------------------\n")

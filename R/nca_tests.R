@@ -17,14 +17,6 @@ function (analyses, loop.data, test.params, effect_aggregation) {
   # But not for OLS
   ceilings <- names(analyses)[names(analyses) != "ols"]
 
-  # test.rep can never be larger than n!, only test for small h's
-  # fact(15) is 1e12, if user chooses that for test.rep he's got other problems
-  if (h < 16 && test.params$rep > factorial(h)) {
-    test.params$rep <- factorial(h)
-    fmt = "\nLowered test.rep to %s as it can not be larger than N!\n"
-    cat(sprintf(fmt, test.params$rep))
-  }
-
   # Ignore errors resulting from sampling
   old.warning <- getOption("warn")
   options(warn = -1)
@@ -38,6 +30,15 @@ function (analyses, loop.data, test.params, effect_aggregation) {
   samples <- foreach (i=1:test.params$rep) %dopar% {
     set.seed(i)
     sample(1:h, h, replace = FALSE)
+  }
+
+  # For small sample sizes, make sure they are unique
+  if (test.params$rep <= 720) {
+    while (length(unique(samples)) < test.params$rep) {
+      set.seed(length(samples))
+      samples[[length(samples) + 1]] <- sample(1:h, h, replace = FALSE)
+    }
+    samples <- unique(samples)
   }
 
   for (ceiling in ceilings) {
@@ -80,16 +81,20 @@ function (analyses, loop.data, test.params, effect_aggregation) {
 
     # Add threshold- and P-value for displaying in summary
     threshold.value <- as.numeric(quantile(sort(data), 1 - test.params$p_threshold))
-    p.value <- 1 - mean(data < observed)
-    p.value <- max(p.value, 1/test.params$rep)
+    p_value <- 1 - mean(data < observed)
+    p_value <- max(p_value, 1/test.params$rep)
 
     # Add MOE
     uns <- test.params$p_confidence + 0.5 * (1 - test.params$p_confidence)
-    test.params$p_accuracy <- qnorm(uns) * sqrt(p.value * (1 - p.value) / test.params$rep)
+    test.params$p_accuracy <- qnorm(uns) * sqrt(p_value * (1 - p_value) / test.params$rep)
+
+    if (h <= 6 && test.params$rep == factorial(h)) {
+      test.params$p_accuracy <- 0
+    }
 
     names <- c(colnames(loop.data$x), colnames(y_org))
     test[[ceiling]] <- list(data = data, observed = observed, test.params=test.params,
-                            p.value = p.value, threshold.value = threshold.value,
+                            p_value = p_value, threshold.value = threshold.value,
                             names = names)
   }
 
@@ -127,7 +132,7 @@ function (ceiling, ceiling_test, pdf=FALSE, path=NULL) {
   ceiling <- p_pretty_name(ceiling)
   data <- ceiling_test$data
   observed <- ceiling_test$observed
-  p.value <- ceiling_test$p.value
+  p_value <- ceiling_test$p_value
   threshold.value <- ceiling_test$threshold.value
   p_threshold <- ceiling_test$test.params$p_threshold
   names <- ceiling_test$names
@@ -145,13 +150,17 @@ function (ceiling, ceiling_test, pdf=FALSE, path=NULL) {
   label.random <- ifelse(p_threshold > 0, sprintf(
       "----  random (d = %.3f, p_threshold %.2f)", threshold.value, p_threshold), "")
   label.p <- ""
-  if (!is.na(p.value)) {
-    p_accuracy <- ceiling_test$test.params$p_accuracy
+  if (!is.na(p_value)) {
     rep <- ceiling_test$test.params$rep
-    p.min <- max(0, p.value - p_accuracy)
-    p.max <- min(1, p.value + p_accuracy)
-    label.p <- sprintf(", p = %.3f [%.3f, %.3f], rep = %d",
-                       p.value, p.min, p.max, rep)
+    p_accuracy <- ceiling_test$test.params$p_accuracy
+    if (p_accuracy > 1e-6) {
+      p.min <- max(0, p_value - p_accuracy)
+      p.max <- min(1, p_value + p_accuracy)
+      label.p <- sprintf(", p = %.3f [%.3f, %.3f], rep = %d",
+                       p_value, p.min, p.max, rep)
+    } else {
+      label.p <- sprintf(", p = %.3f, rep = %d", p_value, rep)
+    }
   }
   label.observed <- sprintf("observed (d = %.3f%s)", observed, label.p)
 

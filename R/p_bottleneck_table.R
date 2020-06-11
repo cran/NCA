@@ -16,7 +16,7 @@ function (x, y, scope, flip.y, ceilings, bottleneck.x, bottleneck.y, steps, step
 
   bottlenecks <- list()
   for (ceil in setdiff(ceilings, p_no_bottleneck)) {
-    bottlenecks[[ceil]]          <- mp
+    bottlenecks[[ceil]] <- mp
   }
 
   return( list(
@@ -68,20 +68,14 @@ function (y, scope, steps, step.size, bottleneck.y, flip.y) {
     step <- (py.high - py.low) / steps
     values <- seq(py.low, py.high, by=step)
   } else {
-    values <- c()
-    start <- py.low
-
+    values <- NULL
     if (bn.y.id %in% c(1, 2)) {
       step.size <- step.size * (py.high - py.low) / 100
-      while (start <= py.high) {
-        values <- c(values, start)
-        start <- start + step.size
-      }
-    } else {
-      while (start <= py.high) {
-        values <- c(values, start)
-        start <- floor((start + step.size) / step.size) * step.size
-      }
+    }
+    value <- py.low
+    while (value <= py.high) {
+      values <- c(values, value)
+      value <- value + step.size
     }
 
     if (abs(values[length(values)] - py.high) > 1E-6) {
@@ -102,10 +96,7 @@ function (y, scope, steps, step.size, bottleneck.y, flip.y) {
   if (p_bottleneck_id(bottleneck.y) %in% c(1, 2)) {
     mp <- 100 * (mp - py.low) / (py.high - py.low)
   } else if (p_bottleneck_id(bottleneck.y) == 4) {
-    # Normalize values to [0, 100]
-    tmp <- values - py.low
-    tmp <- 100 * tmp / max(tmp)
-    mp <- matrix(tmp, ncol=1)
+    mp <- matrix(100 * probs, ncol=1)
   }
 
   colnames(mp) <- colnames(y)

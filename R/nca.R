@@ -39,12 +39,17 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
   bn.data <- p_bottleneck_data(data.x, data.y, scope, flip.y, ceilings,
                                bottleneck.x, bottleneck.y, steps, step.size, cutoff)
 
-  # Create output lists
-  plots <- list()
-  summaries <- list()
-  tests <- list()
-  peers <- list()
-  test.time <- 0
+  # Data for tests
+  # test.rep can never be larger than n!, only test for small h's
+  # fact(15) is 1e12, if user chooses that for test.rep he's got other problems
+  if (nrow(data) < 16 && test.rep > factorial(nrow(data))) {
+    test.rep <- factorial(nrow(data))
+    fmt = "\nLowered test.rep to %s as it can not be larger than N!\n\n"
+    cat(sprintf(fmt, test.rep))
+  }
+  test.params <- list(rep=test.rep,
+                      p_confidence=test.p_confidence,
+                      p_threshold=test.p_threshold)
 
   # Create cluster for parallisation if needed
   if (detectCores() > 1 &&
@@ -54,6 +59,13 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
       }
       registerDoParallel(detectCores())
   }
+
+  # Create output lists
+  plots <- list()
+  summaries <- list()
+  tests <- list()
+  peers <- list()
+  test.time <- 0
 
   # Loop the independent varaibles
   for (id.x in 1:length(data.x)) {
@@ -89,9 +101,6 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
       analyses[[ceiling]] <- analysis
     }
 
-    test.params <- list(rep=test.rep,
-                        p_confidence=test.p_confidence,
-                        p_threshold=test.p_threshold)
     test_tuple <- p_test(analyses, loop.data, test.params, effect_aggregation)
     if (!is.null(test_tuple)) {
       tests[[x.name]] <- test_tuple$test
