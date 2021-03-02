@@ -5,7 +5,7 @@
 \description{This will be used for the \bold{pch} parameter of the plots, default is 21.\cr
 Set before calling nca_output\cr
 > point.type <- 22\cr\cr
-See \href{http://www.statmethods.net/advgraphs/images/points.png}{
-http://www.statmethods.net/advgraphs/images/points.png} for more symbols
+See \href{https://www.statmethods.net/advgraphs/images/points.png}{
+https://www.statmethods.net/advgraphs/images/points.png} for more symbols
 }
 \keyword{parameter}

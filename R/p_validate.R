@@ -45,10 +45,42 @@ function (x, flip.x) {
       flip.x <- replicate(length(x), flip.x)
     } else {
       message()
-      stop("The length of flip.x needs to be equal to the length of x ",
+      stop("The length of 'flip.x' needs to be equal to the length of x ",
            "or a single Boolean!\n", call. = FALSE)
     }
   }
 
   return ( flip.x )
+}
+
+p_validate_corner <-
+function (x, corner) {
+  # Check length of (or create) the vector
+  if (length(corner) != length(x)) {
+    # Use single value for all Xs
+    if (length(corner) == 1) {
+      # Use single value for all Xs
+      corner <- replicate(length(x), corner)
+    } else {
+      message()
+      stop("The length of 'corner' needs to be equal to the length of x ",
+           "or a integer 1:4!\n", call. = FALSE)
+    }
+  }
+
+  # Check if all corners are 1=4
+  if (!all(corner %in% 1:4)) {
+    message()
+    stop("All corners must be an integer between 1 and 4 !\n", call. = FALSE)
+  }
+
+  # Check if corners are all on top or all on bottom
+  if (!all(corner %in% c(1, 2)) && !all(corner %in% c(3, 4))) {
+    message()
+    stop("All corners need to be in the top half (1 and 2) \n       ",
+         "or the bottom half (3 and 4).\n       ",
+         "You can not mix top and bottom !\n", call. = FALSE)
+  }
+
+  return (corner)
 }

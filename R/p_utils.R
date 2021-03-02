@@ -3,7 +3,7 @@ function (x.name, y.name) {
   return (paste(x.name, y.name, sep = " - "))
 }
 
-p_pretty_name <- 
+p_pretty_name <-
 function (uglyName) {
   return( gsub("_", "-", toupper(uglyName)) )
 }
@@ -24,7 +24,7 @@ function(number) {
   }
 }
 
-p_pretty_number <- 
+p_pretty_number <-
 function (uglyNumber, default="", prec=3, useSpaces=FALSE) {
   if (!p_is_number(uglyNumber)) {
     return(default)
@@ -33,16 +33,16 @@ function (uglyNumber, default="", prec=3, useSpaces=FALSE) {
   if (is.integer(uglyNumber) && !useSpaces) {
     return(sprintf("%d", uglyNumber))
   }
-  
+
   if (prec == "auto") {
-    if (uglyNumber == 0) { 
+    if (uglyNumber == 0) {
       prec <- 3
     } else {
       prec <- max(0, 3 - floor(log10(abs(uglyNumber))))
     }
   }
   fmt <- sprintf("%%.%df%%s", prec)
-  
+
   nSpaces <- 0
   if (useSpaces) {
     nSpaces <- ifelse(prec == 0, 4, max(0, 3-prec))

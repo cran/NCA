@@ -26,12 +26,20 @@ function (bn, method, title) {
   bn.y.id <- attr(bn, "bn.y.id")
   rows <- nrow(bn)
   x.length <- ncol(bn) - 1
+  size <- attr(bn, "size")
   cutoff <- attr(bn, "cutoff")
 
   # TODO Weird bug : can't replace colnames in bn
   tmp <- matrix(nrow=rows, ncol=x.length)
   for (i in 1:x.length) {
-    tmp[, i] <- bn[,i+1]
+    if (bn.x == 'percentile') {
+      suppressWarnings(
+        cases <- round(size * as.numeric(bn[,i+1]) / 100, digits = 0)
+      )
+      tmp[, i] <- paste0(bn[,i+1], ' (', as.character(cases), ')')
+    } else {
+      tmp[, i] <- bn[,i+1]
+    }
   }
   if (length(tmp) == 0) {
     return()
@@ -78,12 +86,20 @@ function (bn, method, title) {
   bn.y.id <- attr(bn, "bn.y.id")
   rows <- nrow(bn)
   x.length <- ncol(bn) - 1
+  size <- attr(bn, "size")
   cutoff <- attr(bn, "cutoff")
 
   # TODO Weird bug : can't replace colnames in bn
   tmp <- matrix(nrow=rows, ncol=x.length)
   for (i in 1:x.length) {
-    tmp[, i] <- bn[,i+1]
+    if (bn.x == 'percentile') {
+      suppressWarnings(
+        cases <- round(size * as.numeric(bn[,i+1]) / 100, digits = 0)
+      )
+      tmp[, i] <- paste0(bn[,i+1], ' (', as.character(cases), ')')
+    } else {
+      tmp[, i] <- bn[,i+1]
+    }
   }
   if (length(tmp) == 0) {
     return()

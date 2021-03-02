@@ -5,13 +5,14 @@ function (x, y, scope, flip.y, ceilings, bottleneck.x, bottleneck.y, steps, step
   bn.x.id <- p_bottleneck_id(bn.x)
   bn.y.id <- p_bottleneck_id(bn.y)
 
-  bottleneck.xy <- p_mp_mpy(y, scope, steps, step.size, bottleneck.y, flip.y)
+  bottleneck.xy <- p_mp_mpy(y, scope, steps, step.size, bn.y.id, flip.y)
   mp <- as.data.frame(bottleneck.xy[[1]])
   mpy <- bottleneck.xy[[2]]
 
   attr(mp, "bn.x") <- bn.x
   attr(mp, "bn.y") <- bn.y
   attr(mp, "bn.y.id") <- bn.y.id
+  attr(mp, "size") <- nrow(x)
   attr(mp, "cutoff") <- cutoff
 
   bottlenecks <- list()
@@ -32,11 +33,29 @@ function (x, y, scope, flip.y, ceilings, bottleneck.x, bottleneck.y, steps, step
 }
 
 p_mp_mpy <-
-function (y, scope, steps, step.size, bottleneck.y, flip.y) {
+function (y, scope, steps, step.size, bn.y.id, flip.y) {
+  if (length(steps) == 1 && steps < 1) {
+    steps <- 10
+  }
+
+  if (bn.y.id == 3) {
+    mp_mpy <- p_mp_mpy_actual(y, scope, steps, step.size, flip.y)
+  }
+  else {
+    mp_mpy <- p_mp_mpy_perc(y, scope, steps, step.size, bn.y.id, flip.y)
+  }
+
+  colnames(mp_mpy[[1]]) <- colnames(y)
+  colnames(mp_mpy[[2]]) <- colnames(y)
+
+  return( mp_mpy )
+}
+
+p_low_high <-
+function (y, scope, bn.y.id) {
   # Try to get the low/high values from the scope
   py.low <- scope[[1]][3]
   py.high <- scope[[1]][4]
-  bn.y.id <- p_bottleneck_id(bottleneck.y)
 
   # Scope might be NULL
   if (is.null(py.low) || is.null(py.high)) {
@@ -48,36 +67,53 @@ function (y, scope, steps, step.size, bottleneck.y, flip.y) {
   }
 
   # User want from zero
-  if (p_bottleneck_id(bottleneck.y) == 2) {
+  if (bn.y.id == 2) {
     py.low <- 0
   }
 
-  # Get the values
-  if (bn.y.id == 4) {
-    if (is.null(step.size) || step.size <= 0) {
-      probs <- seq(0, 1, length.out=steps + 1)
-    } else {
-      probs <- seq(0, 1, by=min(1000, step.size / 100))
-    }
-    values <- quantile(y[[1]], probs, na.rm=TRUE)
+  return ( c(py.low, py.high) )
+}
+
+p_sanitize_steps <-
+function (steps, low, high) {
+  steps <- sort(steps)
+
+  if (low > steps[1]) {
+    message("\nSome steps below scope, excluded")
+    steps <- steps[steps >= low]
   }
-  else if (is.null(step.size) || step.size <= 0) {
-    if (steps < 1) {
-      steps <- 10
+
+  if (high < steps[length(steps)]) {
+    message("\nSome steps above scope, excluded")
+    steps <- steps[steps <= high]
+  }
+
+  return (steps)
+}
+
+p_mp_mpy_actual <-
+function (y, scope, steps, step.size, flip.y) {
+  py.low.high <- p_low_high(y, scope, 3)
+  py.low <- py.low.high[1]
+  py.high <- py.low.high[2]
+
+  if (is.null(step.size) || step.size <= 0) {
+    if (length(steps) > 1) {
+      # Interpret the list of steps as the values
+      values <- p_sanitize_steps(steps, py.low, py.high)
     }
-    step <- (py.high - py.low) / steps
-    values <- seq(py.low, py.high, by=step)
+    else {
+      # Single step
+      step <- (py.high - py.low) / steps
+      values <- seq(py.low, py.high, by=step)
+    }
   } else {
     values <- NULL
-    if (bn.y.id %in% c(1, 2)) {
-      step.size <- step.size * (py.high - py.low) / 100
-    }
     value <- py.low
     while (value <= py.high) {
       values <- c(values, value)
       value <- value + step.size
     }
-
     if (abs(values[length(values)] - py.high) > 1E-6) {
       values <- c(values, py.high)
     }
@@ -89,20 +125,43 @@ function (y, scope, steps, step.size, bottleneck.y, flip.y) {
     mpy <- matrix(values, ncol=1)
   }
 
-  # Define the bottleneck table
-  mp  <- matrix(mpy, nrow=length(mpy), ncol=1)
+  return (list(mpy, mpy))
+}
 
-  # Display Ys as percentage or percentiles
-  if (p_bottleneck_id(bottleneck.y) %in% c(1, 2)) {
-    mp <- 100 * (mp - py.low) / (py.high - py.low)
-  } else if (p_bottleneck_id(bottleneck.y) == 4) {
-    mp <- matrix(100 * probs, ncol=1)
+p_mp_mpy_perc <-
+function (y, scope, steps, step.size, bn.y.id, flip.y) {
+  py.low.high <- p_low_high(y, scope, bn.y.id)
+  py.low <- py.low.high[1]
+  py.high <- py.low.high[2]
+
+  if (is.null(step.size) || step.size <= 0) {
+    if (length(steps) > 1) {
+      # Interpret the list of steps as the probabilities (0 - 100)
+      probs <- p_sanitize_steps(steps, 0, 100) / 100
+    }
+    else {
+      # Single step
+      probs <- seq(0, 1, length.out=steps + 1)
+    }
+  } else {
+    probs <- seq(0, 1, by=min(1000, step.size / 100))
   }
 
-  colnames(mp) <- colnames(y)
-  colnames(mpy) <- colnames(y)
+  if (bn.y.id == 4) {
+    values <- quantile(y[[1]], probs, na.rm=TRUE)
+  }
+  else {
+    values <- py.low + probs * (py.high - py.low)
+  }
 
-  return( list(mp, mpy) )
+  if (flip.y) {
+    mpy <- matrix(rev(values), ncol=1)
+  } else {
+    mpy <- matrix(values, ncol=1)
+  }
+  mp <- matrix(100 * probs, ncol=1)
+
+  return (list(mp, mpy))
 }
 
 p_bottleneck_options <- list(
@@ -129,4 +188,3 @@ function (option) {
   }
   return(match(option, p_bottleneck_options))
 }
-

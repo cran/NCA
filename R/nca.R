@@ -12,7 +12,7 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh")) {
 
 nca_analysis <-
 function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
-          flip.x=FALSE, flip.y=FALSE, scope=NULL,
+          corner=NULL, flip.x=FALSE, flip.y=FALSE, scope=NULL,
           bottleneck.x='percentage.range', bottleneck.y='percentage.range',
           steps=10, step.size=NULL, cutoff=0, qr.tau=0.95, effect_aggregation=c(1),
           test.rep=0, test.p_confidence=0.95, test.p_threshold=0) {
@@ -25,7 +25,16 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
   # Validate ceiling types
   ceilings <- p_validate_ceilings(ceilings)
 
-  # Validate flip.x and flip.y
+  # Overrule flip.x and flip.y if corners is defined
+  if (!is.null(corner)) {
+    corner <- p_validate_corner(x, corner)
+    if (flip.x || flip.y) {
+      message("\nIgnoring 'flip.x' and 'flip.y': 'corner' is defined\n")
+    }
+    flip.y <- all(corner %in% c(3, 4))
+    flip.x <- corner %in% c(2, 4)
+  }
+  # Always validate flip.x and flip.y
   flip.x <- p_validate_flipx(x, flip.x)
   flip.y <- isTRUE(flip.y)
 
@@ -33,7 +42,7 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
   scope <- p_scope(x, scope)
 
   # Validate effect size aggregation
-  effect_aggregation <- intersect(c(2, 3,4), effect_aggregation)
+  effect_aggregation <- intersect(c(2, 3, 4), effect_aggregation)
 
   # Data object for bottlenecks
   bn.data <- p_bottleneck_data(data.x, data.y, scope, flip.y, ceilings,
@@ -118,7 +127,7 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
         analyses[[ceiling]]$p_accuracy <- NA
       }
     }
-    plots[[x.name]] <- p_plot(analyses, loop.data)
+    plots[[x.name]] <- p_plot(analyses, loop.data, corner)
     summaries[[x.name]] <- p_summary(analyses, loop.data)
     peers[[x.name]] <- p_peers(loop.data)
   }

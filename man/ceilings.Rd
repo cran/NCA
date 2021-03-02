@@ -5,6 +5,8 @@
 \description{Ceilings to use for the \code{\link{nca}} or \code{\link{nca_analysis}} methods \cr
 > nca(data, c(1, 2), 3, ceilings=c('ols', 'ce_fdh', 'cr_fdh'))
 
+Note that the ols regression line is not a ceiling but is included as a reference. 
+
 \tabular{ll}{
 \cr\cr\cr\cr\cr\cr\cr
 \bold{Ceiling Technique} \tab \bold{Name}\cr
@@ -17,6 +19,7 @@
 \bold{cr_vrs}       \tab Ceiling Regression with Varying Return to Scale  \cr
 \bold{ce_fdh}       \tab Ceiling Envelopment with Free Disposal Hull      \cr
 \bold{cr_fdh}       \tab Ceiling Regression with Free Disposal Hull       \cr
+\bold{c_lp}         \tab Ceiling Linear Programming                       \cr
 }
 }
 

@@ -122,7 +122,7 @@ function (test.time) {
 
 p_display_test <-
 function (test, pdf=FALSE, path=NULL) {
-  for (ceiling in names(test)) {
+  for (ceiling in rev(names(test))) {
     p_display_ceiling_test(ceiling, test[[ceiling]], pdf, path)
   }
 }

@@ -5,7 +5,7 @@
 \description{This will be used for the \bold{col} parameters of the plots, default is blue.\cr
 Set before calling nca_output\cr
 > point.color <- red\cr\cr
-See \href{http://www.statmethods.net/advgraphs/images/points.png}{
-http://www.statmethods.net/advgraphs/images/points.png} for more symbols
+See \href{https://www.statmethods.net/advgraphs/images/points.png}{
+https://www.statmethods.net/advgraphs/images/points.png} for more symbols
 }
 \keyword{parameter}

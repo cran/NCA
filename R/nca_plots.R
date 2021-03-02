@@ -1,13 +1,13 @@
 p_plot <-
-function (analyses, loop.data) {
+function (analyses, loop.data, corner) {
   plot <- list()
 
   plot$x <- loop.data$x
   plot$y <- loop.data$y
   plot$scope.theo <- loop.data$scope.theo
   plot$names <- loop.data$names
-  plot$flip.x <- loop.data$flip.x
-  plot$flip.y <- loop.data$flip.y
+  plot$flip.x <- ifelse(is.null(corner), loop.data$flip.x, FALSE)
+  plot$flip.y <- ifelse(is.null(corner), loop.data$flip.y, FALSE)
   plot$conf <- loop.data$conf
   plot$title <- p_generate_title(colnames(plot$x), colnames(plot$y))
   plot$methods <- names(analyses)
@@ -26,25 +26,13 @@ function (analyses, loop.data) {
 
 p_display_plot <-
 function (plot, pdf=FALSE, path=NULL) {
-  # Get the line colors and types from the global env, allowing user changes
-  line_colors <- mget("line.colors", envir=.GlobalEnv, ifnotfound="notfound")[[1]]
-  line_types <- mget("line.types", envir=.GlobalEnv, ifnotfound="notfound")[[1]]
-  # Append default for missing values
-  line_colors <- append(line_colors, line.colors)
-  line_types <- append(line_types, line.types)
-  # The same for line width and point-type/-color
-  lineWidth <- mget("line.width", envir=.GlobalEnv, ifnotfound="notfound")[[1]]
-  if (!is.numeric(lineWidth)) {
-    lineWidth <- line.width
-  }
-  point_type <- mget("point.type", envir=.GlobalEnv, ifnotfound="notfound")[[1]]
-  if (!is.numeric(point_type)) {
-    point_type <- point.type
-  }
-  point_color <- mget("point.color", envir=.GlobalEnv, ifnotfound="notfound")[[1]]
-  point_color <- tryCatch({
-      col2rgb(point_color); point_color
-  }, error = function(e) return(point.color) )
+  # Get the params for plotting
+  params <- get_plot_params()
+  line_colors <- params[[1]]
+  line_types <- params[[2]]
+  line_width <- params[[3]]
+  point_type <- params[[4]]
+  point_color <- params[[5]]
 
   # Open new window or PDF
   if (pdf) {
@@ -56,12 +44,10 @@ function (plot, pdf=FALSE, path=NULL) {
   }
 
   # Plot the data points
-  flip.x <- plot$flip.x
-  flip.y <- plot$flip.y
-  xlim <- c(plot$scope.theo[1 + flip.x], plot$scope.theo[2 - flip.x])
-  ylim <- c(plot$scope.theo[3 + flip.y], plot$scope.theo[4 - flip.y])
+  xlim <- c(plot$scope.theo[1 + plot$flip.x], plot$scope.theo[2 - plot$flip.x])
+  ylim <- c(plot$scope.theo[3 + plot$flip.y], plot$scope.theo[4 - plot$flip.y])
   # Confidence lines might be outside the scope
-  ylim <- p_con_lim(ylim, plot, flip.y)
+  ylim <- p_con_lim(ylim, plot, plot$flip.y)
   plot (plot$x, plot$y, pch=point_type, col=point_color,
         xlim=xlim, ylim=ylim,
         xlab=colnames(plot$x), ylab=tail(plot$names, n=1))
@@ -73,7 +59,7 @@ function (plot, pdf=FALSE, path=NULL) {
   # p_plot_grid(plot, 10)
 
   # Plot the legend before adding the clipping area
-  legendParams = list()
+  legendParams <- list()
   for (method in plot$methods) {
     line_color <- line_colors[[method]]
     line_type  <- line_types[[method]]
@@ -102,20 +88,12 @@ function (plot, pdf=FALSE, path=NULL) {
 
     if (method %in% p_ceilings_step) {
       lines(line[[1]], line[[2]], type="l",
-            lty=line_type, col=line_color, lwd=lineWidth)
+            lty=line_type, col=line_color, lwd=line_width)
     } else {
-      # LH line
-      is_finite = TRUE
-      if (typeof(line) == "double" && !all(is.finite(line))) {
-        is_finite = FALSE
+      if (is_infinite(line)) {
+        next
       }
-      # 'LM' style line
-      else if (typeof(line) == "list" && !all(is.finite(line$coefficients))) {
-        is_finite = FALSE
-      }
-      if (is_finite) {
-        abline(line, lty=line_type, col=line_color, lwd=lineWidth)
-      }
+      abline(line, lty=line_type, col=line_color, lwd=line_width)
     }
 
     # Only for development
@@ -205,4 +183,42 @@ function (line, method) {
   if (method == "cr_cm_conf") {
     points(t(columns[4:5,]), col="red")
   }
+}
+
+get_plot_params <-
+function () {
+  # Get the line colors and types from the global env, allowing user changes
+  line_colors <- mget("line.colors", envir = .GlobalEnv, ifnotfound = "notfound")[[1]]
+  line_types <- mget("line.types", envir = .GlobalEnv, ifnotfound = "notfound")[[1]]
+  # Append default for missing values
+  line_colors <- append(line_colors, line.colors)
+  line_types <- append(line_types, line.types)
+  # The same for line width and point-type/-color
+  line_width <- mget("line.width", envir = .GlobalEnv, ifnotfound = "notfound")[[1]]
+  if (!is.numeric(line_width)) {
+    line_width <- line.width
+  }
+  point_type <- mget("point.type", envir = .GlobalEnv, ifnotfound = "notfound")[[1]]
+  if (!is.numeric(point_type)) {
+    point_type <- point.type
+  }
+  point_color <- mget("point.color", envir = .GlobalEnv, ifnotfound = "notfound")[[1]]
+  point_color <- tryCatch({
+    col2rgb(point_color); point_color
+  }, error = function (e) return(point.color))
+
+  return(list(line_colors, line_types, line_width, point_type, point_color))
+}
+
+is_infinite <-
+function (line) {
+  # LH line
+  if (typeof(line) == "double" && !all(is.finite(line))) {
+    return(TRUE)
+  }
+  # 'LM' style line
+  if (typeof(line) == "list" && !all(is.finite(line$coefficients))) {
+    return(TRUE)
+  }
+  return(FALSE)
 }
