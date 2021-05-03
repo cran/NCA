@@ -1,4 +1,4 @@
-83c76a34c997ea732c0c8d0a61a5e9d5 *DESCRIPTION
+24e1622f581c1adb3663d365fdeaf7cc *DESCRIPTION
 2ce8aa50d8d282a27ab866f59da980f9 *NAMESPACE
 ca39289a48f99b4c586a0ead773e172d *R/nca.R
 52a20d8ba645feeda9ca700592226a78 *R/nca_bottleneck.R
@@ -9,7 +9,7 @@ ca39289a48f99b4c586a0ead773e172d *R/nca.R
 e8cefa23257a11eb667b8f3a4a04c320 *R/nca_tests.R
 5e1b5ee3320981bfbf4fcaac437a0d2c *R/onAttach.R
 2b3e88b47841e3b23daf968521b6c0c6 *R/p_above.R
-facf6ada8a67155f25cf38d032144cda *R/p_bottleneck.R
+1dd647d9af05966cf59c49293f412822 *R/p_bottleneck.R
 d0fcb7e775bf95786fad263fd31a668d *R/p_bottleneck_table.R
 ef3b6d413a6895cca16e31ba8fd9230b *R/p_ceiling.R
 e376c5500c874610369036e236e965d8 *R/p_confidence.R
@@ -41,7 +41,7 @@ e7d0858cb93a0e37d943a9cf940dad19 *R/p_nca_qr.R
 2181ec78df55f357b50ad91470a0fd77 *R/p_utils.R
 67dbc0eacb4e211168697c864f723b22 *R/p_validate.R
 7d496797b645e219cdf16252413c4dd0 *data/nca.example.RData
-dfacd1e3fe57faf9301db0f34b6f97c9 *man/NCA-package.Rd
+c027231049a93de16be8a0bf05773d52 *man/NCA-package.Rd
 f673dd69ac4d86343cdd7a37732f13a5 *man/ceilings.Rd
 aeb351db94bede226f0a7f89c15e131e *man/line.colors.Rd
 186d66a84329f8d1403ad3ef63f8de49 *man/line.types.Rd

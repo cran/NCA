@@ -17,11 +17,11 @@ function (loop.data, bn.data, slope, intercept) {
   } else {
     mpx <- (bn.data$mpy - intercept) / slope
     if (bn.data$cutoff == 0) {
-      mpx [ mpx < (theo[1] - epsilon) ] <- ifelse(flip.x, NA, -Inf)
-      mpx [ mpx > (theo[2] + epsilon) ] <- ifelse(flip.x, Inf, NA)
+      mpx [ mpx < (theo[1] + epsilon) ] <- ifelse(flip.x, NA, -Inf)
+      mpx [ mpx > (theo[2] - epsilon) ] <- ifelse(flip.x, Inf, NA)
     } else if (bn.data$cutoff == 1) {
-      mpx [ mpx < (theo[1] - epsilon) ] <- theo[1]
-      mpx [ mpx > (theo[2] + epsilon) ] <- theo[2]
+      mpx [ mpx < (theo[1] + epsilon) ] <- theo[1]
+      mpx [ mpx > (theo[2] - epsilon) ] <- theo[2]
     }
   }
 
@@ -71,9 +71,9 @@ function (bn.data, peers, theo, flip.x, flip.y) {
     # search the peer that is closest above to the desired outcome,
     # and select it corresponding x value of that peer
     if (flip.y) {
-      index <- which(y.peers <= (mpy[j,1] + epsilon))[1]
+      index <- which(y.peers < (mpy[j,1] + epsilon))[1]
     } else {
-      index <- which(y.peers >= (mpy[j,1] - epsilon))[1]
+      index <- which(y.peers > (mpy[j,1] - epsilon))[1]
     }
 
     if (is.na(index)) {
@@ -85,11 +85,11 @@ function (bn.data, peers, theo, flip.x, flip.y) {
 
   if (is.element(bn.data$cutoff, c(0,1))) {
     if (flip.x) {
-      mpx [ mpx <= (theo[1] - epsilon) ] <- ifelse(bn.data$cutoff == 0, NA, theo[1])
-      mpx [ mpx >= (theo[2] + epsilon) ] <- ifelse(bn.data$cutoff == 0, Inf, theo[2])
+      mpx [ mpx < (theo[1] + epsilon) ] <- ifelse(bn.data$cutoff == 0, NA, theo[1])
+      mpx [ mpx > (theo[2] - epsilon) ] <- ifelse(bn.data$cutoff == 0, Inf, theo[2])
     } else {
-      mpx [ mpx <= (theo[1] - epsilon) ] <- ifelse(bn.data$cutoff == 0, -Inf, theo[1])
-      mpx [ mpx >= (theo[2] + epsilon) ] <- ifelse(bn.data$cutoff == 0, NA, theo[2])
+      mpx [ mpx < (theo[1] + epsilon) ] <- ifelse(bn.data$cutoff == 0, -Inf, theo[1])
+      mpx [ mpx > (theo[2] - epsilon) ] <- ifelse(bn.data$cutoff == 0, NA, theo[2])
     }
   }
 
@@ -111,9 +111,9 @@ function (bn.data, peers, theo, flip.x, flip.y) {
 
   for (j in 1:length(mpy)) {
     if (flip.y) {
-      index <- which(y.peers <= (mpy[j,1] + epsilon))[1]
+      index <- which(y.peers < (mpy[j,1] + epsilon))[1]
     } else {
-      index <- which(y.peers >= (mpy[j,1] - epsilon))[1]
+      index <- which(y.peers > (mpy[j,1] - epsilon))[1]
     }
 
     if (is.na(index)) {
@@ -126,11 +126,11 @@ function (bn.data, peers, theo, flip.x, flip.y) {
   }
 
   if (bn.data$cutoff == 0) {
-    mpx [ mpx <= (theo[1] - epsilon) ] <- ifelse(flip.x, NA, -Inf)
-    mpx [ mpx >= (theo[2] + epsilon) ] <- ifelse(flip.x, Inf, NA)
+    mpx [ mpx < (theo[1] + epsilon) ] <- ifelse(flip.x, NA, -Inf)
+    mpx [ mpx > (theo[2] - epsilon) ] <- ifelse(flip.x, Inf, NA)
   } else if (bn.data$cutoff == 1) {
-    mpx [ mpx <= (theo[1] - epsilon) ] <- theo[1]
-    mpx [ mpx >= (theo[2] + epsilon) ] <- theo[2]
+    mpx [ mpx < (theo[1] + epsilon) ] <- theo[1]
+    mpx [ mpx > (theo[2] - epsilon) ] <- theo[2]
   }
 
   return( mpx )
