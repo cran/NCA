@@ -1,4 +1,4 @@
-export(nca, nca_analysis, nca_output,
+export(nca, nca_analysis, nca_output, nca_outliers,
        ceilings, line.colors, line.types, line.width, point.type, point.color)
 S3method(plot, nca_result)
 S3method(print, nca_result)
@@ -13,7 +13,6 @@ importFrom("foreach", "foreach", "%dopar%")
 importFrom("iterators", "iter")
 importFrom("lpSolve", "lp")
 importFrom("KernSmooth", "dpik")
-importFrom("sfa", "sfa")
 importFrom("utils", "packageDescription")
 importFrom("graphics", "abline", "legend", "par", "plot", "strwidth", "title", "clip", "lines")
 importFrom("grDevices", "dev.new", "dev.off", "pdf")

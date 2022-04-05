@@ -62,8 +62,8 @@ function (y, scope, bn.y.id) {
     py.low <- min(y, na.rm=TRUE)
     py.high <- max(y, na.rm=TRUE)
   } else {
-    py.low <- min(y, py.low)
-    py.high <- max(y, py.high)
+    py.low <- min(y, py.low, na.rm=TRUE)
+    py.high <- max(y, py.high, na.rm=TRUE)
   }
 
   # User want from zero

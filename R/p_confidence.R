@@ -217,17 +217,18 @@ function (z, n, conf, nrep) {
 # a bandwidth, usually because a data vector has an interquartile range of 0.
 p_dpikSafe <- function(x)
 {
-	result <- try(dpik(x), silent = TRUE)
+  result <- try(dpik(x), silent = TRUE)
 
-	if (class(result) == "try-error") {
-		msg <- geterrmessage()
-		if (grepl("scale estimate is zero for input data", msg)) {
-			result <- dpik(x, scalest = "stdev")
-		} else {
-			stop(msg)
-		}
-	}
-	return(result)
+  if (typeof(result) == "double") {
+    return(result)
+  }
+
+  msg <- geterrmessage()
+  if (grepl("scale estimate is zero for input data", msg)) {
+    return(dpik(x, scalest = "stdev"))
+  } else {
+    stop(msg)
+  }
 }
 
 p_con_ce <-

@@ -17,6 +17,12 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
           steps=10, step.size=NULL, cutoff=0, qr.tau=0.95, effect_aggregation=c(1),
           test.rep=0, test.p_confidence=0.95, test.p_threshold=0) {
 
+  # Cleans up any cluster registration
+  env <- utils::getFromNamespace(".foreachGlobals", "foreach")
+  if (!identical(ls(name=env), character(0))) {
+    rm(list=ls(name=env), pos=env)
+  }
+
   # Validate and clean data
   cleaned <- p_validate_clean(data, x, y)
   data.x <- cleaned$x
@@ -49,11 +55,11 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
                                bottleneck.x, bottleneck.y, steps, step.size, cutoff)
 
   # Data for tests
-  # test.rep can never be larger than n!, only test for small h's
+  # test.rep can never be larger than n!, only test for small n's
   # fact(15) is 1e12, if user chooses that for test.rep he's got other problems
-  if (nrow(data) < 16 && test.rep > factorial(nrow(data))) {
-    test.rep <- factorial(nrow(data))
-    fmt = "\nLowered test.rep to %s as it can not be larger than N!\n\n"
+  if (nrow(data.y) < 16 && test.rep > factorial(nrow(data.x))) {
+    test.rep <- factorial(nrow(data.y))
+    fmt <- "\nLowered test.rep to %s as it can not be larger than N!\n\n"
     cat(sprintf(fmt, test.rep))
   }
   test.params <- list(rep=test.rep,

@@ -30,7 +30,7 @@
   The user will be warned if the stepsize does not fit the Y range.\cr
   Defaults to null for using steps.}
 \item{cutoff}{display calculated x,y values that are lower/higher than lowest/highest observed x,y values in the bottleneck table as:\cr
-0 : NN (not necessary) and NA (not available)\cr 1 : lowest/highest observed values\cr 2 : calculated values}
+0 : NN (not necessary) and NA (not available)\cr 1 : NN (not necessary) and highest observed values\cr 2 : calculated values}
 \item{qr.tau}{define the qr tau (between 0 and 1) for the quantile regression ceiling technique, default 0.95}
 \item{effect_aggregation}{define the corners to aggregate into the effect size. 1 is upper-left and is always selected, 2 is upper-right, 3 is lower-left and 4 is lower-right}
 \item{test.rep}{number of resamples in the statistical approximate permutation test. For test.rep = 0 no statistical test is performed}
@@ -43,7 +43,8 @@ Is used to calculate the p-accuracy for a given number of resamples (test.rep), 
 \item{plots}{A list of plot-data for each x-y combination}
 \item{summaries}{A list of dataframes with the summaries for each x-y combination}
 \item{bottlenecks}{A list of dataframes with a bottleneck table for each ceiling technique}
-\item{peers}{A list of peers for each independent variable}
+\item{peers}{A list of peers for each independent variable.
+Peers are corner points of the CE-FDH ceiling line (e.g., the northwest-corners points for corner = 1)}
 \item{tests}{The results of the test for each independent variable (not human friendly, use nca_output)}
 \item{test.time}{The total time needed to run the tests for all independent variables}
 }

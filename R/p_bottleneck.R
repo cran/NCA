@@ -1,5 +1,5 @@
 # 0 : NN / NA
-# 1 : lowest/highest observed values
+# 1 : NN / highest observed values
 # 2 : calculated values
 
 p_bottleneck <-
@@ -16,13 +16,7 @@ function (loop.data, bn.data, slope, intercept) {
     mpx <- p_mpx_single_peer(bn.data, theo, flip.x)
   } else {
     mpx <- (bn.data$mpy - intercept) / slope
-    if (bn.data$cutoff == 0) {
-      mpx [ mpx < (theo[1] + epsilon) ] <- ifelse(flip.x, NA, -Inf)
-      mpx [ mpx > (theo[2] - epsilon) ] <- ifelse(flip.x, Inf, NA)
-    } else if (bn.data$cutoff == 1) {
-      mpx [ mpx < (theo[1] + epsilon) ] <- theo[1]
-      mpx [ mpx > (theo[2] - epsilon) ] <- theo[2]
-    }
+    mpx <- p_edge_cases(mpx, bn.data, theo, flip.x)
   }
 
   nn.value <- p_nn_value(mpx, loop.data, bn.data)
@@ -83,15 +77,7 @@ function (bn.data, peers, theo, flip.x, flip.y) {
     }
   }
 
-  if (is.element(bn.data$cutoff, c(0,1))) {
-    if (flip.x) {
-      mpx [ mpx < (theo[1] + epsilon) ] <- ifelse(bn.data$cutoff == 0, NA, theo[1])
-      mpx [ mpx > (theo[2] - epsilon) ] <- ifelse(bn.data$cutoff == 0, Inf, theo[2])
-    } else {
-      mpx [ mpx < (theo[1] + epsilon) ] <- ifelse(bn.data$cutoff == 0, -Inf, theo[1])
-      mpx [ mpx > (theo[2] - epsilon) ] <- ifelse(bn.data$cutoff == 0, NA, theo[2])
-    }
-  }
+  mpx <- p_edge_cases(mpx, bn.data, theo, flip.x)
 
   return( mpx )
 }
@@ -125,13 +111,7 @@ function (bn.data, peers, theo, flip.x, flip.y) {
     }
   }
 
-  if (bn.data$cutoff == 0) {
-    mpx [ mpx < (theo[1] + epsilon) ] <- ifelse(flip.x, NA, -Inf)
-    mpx [ mpx > (theo[2] - epsilon) ] <- ifelse(flip.x, Inf, NA)
-  } else if (bn.data$cutoff == 1) {
-    mpx [ mpx < (theo[1] + epsilon) ] <- theo[1]
-    mpx [ mpx > (theo[2] - epsilon) ] <- theo[2]
-  }
+  mpx <- p_edge_cases(mpx, bn.data, theo, flip.x)
 
   return( mpx )
 }
@@ -152,6 +132,7 @@ function (bn.data, theo, flip.x) {
 
 p_transform_mpx <-
 function (loop.data, mpx, bn.x.id) {
+  flip.x <- loop.data$flip.x
   theo <- loop.data$scope.theo
 
   # Display Xs as percentage (either cutoff or 0-high) or percentile
@@ -160,8 +141,15 @@ function (loop.data, mpx, bn.x.id) {
   } else if (bn.x.id == 2) {
     mpx <- 100 * mpx / theo[2]
   } else if (bn.x.id == 4) {
-    percentile <- ecdf(sort(loop.data$x))
-    mpx <- matrix(100 * percentile(mpx), ncol=1)
+    if (flip.x) {
+      percentile <- ecdf(sort(-loop.data$x))
+      tmp <- -mpx - epsilon
+    }
+    else {
+      percentile <- ecdf(sort(loop.data$x))
+      tmp <- mpx - epsilon
+    }
+    mpx <- matrix(100 * percentile(tmp), ncol = 1)
   }
 
   return( mpx )
@@ -169,8 +157,8 @@ function (loop.data, mpx, bn.x.id) {
 
 p_nn_value <-
 function (mpx, loop.data, bn.data) {
-  if (bn.data$cutoff == 0) {
-    return( "NN" )
+  if (bn.data$cutoff %in% c(0, 1)) {
+    return("NN")
   }
 
   flip.x <- loop.data$flip.x
@@ -224,4 +212,16 @@ function (loop.data, mpx, nn.value, na.value, precision.x) {
   colnames(mpx) <- c(loop.data$names[loop.data$idx])
 
   return( mpx )
+}
+
+p_edge_cases <-
+function (mpx, bn.data, theo, flip.x) {
+  mpx[mpx < (theo[1] + epsilon)] <- ifelse(flip.x, NA, -Inf)
+  if (bn.data$cutoff == 0) {
+    mpx[mpx > (theo[2] - epsilon)] <- ifelse(flip.x, Inf, NA)
+  } else if (bn.data$cutoff == 1) {
+    mpx[mpx > (theo[2] - epsilon)] <- theo[2]
+  }
+
+  return(mpx)
 }

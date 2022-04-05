@@ -1,5 +1,5 @@
 p_display_plotly <-
-function (plot, peers, labels) {
+function (plot, peers, labels, name = 'peer') {
   # Get the params for plotting
   params <- get_plot_params()
   line_colors <- params[[1]]
@@ -9,7 +9,9 @@ function (plot, peers, labels) {
   point_color <- params[[5]]
 
   # Missing (or too much) labels
-  if (is.null(labels) || length(labels) != length(plot$x) || length(unique(labels)) > 5) {
+  if (is.null(labels) ||
+  length(labels) != length(plot$x) ||
+  length(unique(labels)) > 5) {
     labels <- replicate(length(plot$x), 'obs')
     color.list <- c('blue')
   } else {
@@ -19,18 +21,23 @@ function (plot, peers, labels) {
   fig <- plot_ly(colors = color.list)
 
   # Add peers as separate trace first
+  peer_names <- rownames(peers)
+  if (ncol(peers) > 2) {
+    peer_names <- peers[, 3]
+  }
   fig <- add_trace(fig, x = c(peers[, 1]), y = c(peers[, 2]),
-                   text = rownames(peers), type = 'scatter', mode = 'markers',
+                   text = peer_names, type = 'scatter', mode = 'markers',
                    marker = list(color = 'red', size = 10),
-                   hovertemplate = '<b>%{text}</b><br>%{x} %{y}',
-                   showlegend = TRUE, name = 'peer')
+                   hovertemplate = '<b>%{text}</b><br>%{x}, %{y}',
+                   showlegend = TRUE, name = name)
 
-  # Add the scatter plot on top of peers, use colors if wanted
-  df <- data.frame(x = c(plot$x), y = c(plot$y), labels = labels)
-  fig <- add_trace(fig, data = df, x = ~x, y = ~y, text = rownames(plot$x),
+  # Add the scatter plot for the remaining points, use colors if wanted
+  include <- !(rownames(plot$x) %in% rownames(peers))
+  fig <- add_trace(fig, x = plot$x[include], y = plot$y[include],
+                   text = rownames(plot$x)[include],
+                   color = ~as.factor(labels[include]),
                    type = 'scatter', mode = 'markers',
-                   marker = list(symbol = point_type),
-                   color = ~as.factor(labels), showlegend = TRUE,
+                   marker = list(symbol = point_type), showlegend = TRUE,
                    hovertemplate = '<b>%{text}</b><br>%{x}, %{y}')
 
   # Print the lines
@@ -46,7 +53,7 @@ function (plot, peers, labels) {
                        x = c(line[[1]]), y = c(line[[2]]),
                        line = line_list, showlegend = TRUE, name = method)
     } else {
-      if (is_infinite(line)) {
+      if (is_infinite(line) || is.null(line)) {
         next
       }
       if (is.double(line)) {
@@ -75,14 +82,16 @@ function (plot, peers, labels) {
   }
 
   # Add title and axis labels
-  # TODO If we add subset to model, limit range to theo, range=c(50, 100)
-  # fig <- layout(fig, title = paste0("<br/>NCA Plot : ", plot$title),
-  fig <- layout(fig,
-                # title = list(text = paste0("NCA Plot : ", plot$title), y = 0.99, yref="container"),
-                title = list(text = paste0("NCA Plot : ", plot$title), yanchor = "top"),
-                xaxis = list(title = colnames(plot$x)),
-                yaxis = list(title = colnames(plot$y))
-  )
+  title <- list(text = paste0("NCA Plot : ", plot$title), yanchor = "top")
+  xaxis <- list(title = colnames(plot$x))
+  if (plot$flip.x) {
+    xaxis["autorange"] <- "reversed"
+  }
+  yaxis <- list(title = colnames(plot$y))
+  if (plot$flip.y) {
+    yaxis["autorange"] <- "reversed"
+  }
+  fig <- layout(fig, title = title, xaxis = xaxis, yaxis = yaxis)
 
   print(fig)
 }
