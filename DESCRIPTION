@@ -1,8 +1,8 @@
 Package: NCA
 Type: Package
 Title: Necessary Condition Analysis
-Version: 3.2.0
-Date: 2022-04-04
+Version: 3.2.1
+Date: 2022-09-14
 Author: Jan Dul <jdul@rsm.nl>
 Maintainer: Govert Buijs <buijs@rsm.nl>
 Description: Performs a Necessary Condition Analysis (NCA). (Dul, J. 2016. Necessary Condition Analysis (NCA). ''Logic and Methodology of 'Necessary but not Sufficient' causality." Organizational Research Methods 19(1), 10-52,
@@ -17,5 +17,5 @@ Imports: gplots, quantreg, KernSmooth, lpSolve, ggplot2, doParallel,
 NeedsCompilation: no
 Repository: CRAN
 Suggests: testthat
-Packaged: 2022-04-05 11:36:47 UTC; govert
-Date/Publication: 2022-04-05 13:52:34 UTC
+Packaged: 2022-09-14 13:12:45 UTC; govert
+Date/Publication: 2022-09-15 09:10:19 UTC

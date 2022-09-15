@@ -21,7 +21,7 @@ nca_outliers <-
       model.new <- nca_analysis(data.new, x, y, ceilings = ceiling)
       eff.nw <- model.new$summaries[[1]]$params[2]
       dif.abs <- eff.nw - eff.or
-      dif.rel <- 100 * dif.abs / eff.or
+      dif.rel <- ifelse(eff.or < epsilon, 0, 100 * dif.abs / eff.or)
 
       if (round(abs(dif.rel), digits = 2) < min.dif) {
         next
@@ -52,6 +52,11 @@ nca_outliers <-
       outliers <- rbind(outliers, list(
         outliers = name, eff.or = eff.or, eff.nw = eff.nw,
         dif.abs = dif.abs, dif.rel = dif.rel, ceiling = zone, scope = scope))
+    }
+
+    if (length(outliers) == 0) {
+      cat("\nNo outliers identified\n")
+      return ()
     }
 
     outliers[, c(2, 3, 4)] <- round(outliers[, c(2, 3, 4)], digits = 2)

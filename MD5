@@ -1,8 +1,8 @@
-6e7999d7e2a0064288b83a244e44f8fe *DESCRIPTION
+0687bf3ee413bae2596aefecb739d9fb *DESCRIPTION
 9dae9b25ebd594a286e1feee071b0db6 *NAMESPACE
 7510f69076f89fa5d555450d2a2075c7 *R/nca.R
 05479e7086b14eb4d05676c78ab85676 *R/nca_bottleneck.R
-c7ceceba702dfcbf4c6e01ad25d8e973 *R/nca_outliers.R
+6e95315de073113ce2867fb84a1e7b57 *R/nca_outliers.R
 2fa548619069d3a1135391fc53d4c695 *R/nca_output.R
 9bab32a0ab4ee59ee0cf3fdd617d80c0 *R/nca_plotly.R
 96d6fde89c77e30ae12dd32f631b16da *R/nca_plots.R
@@ -44,7 +44,7 @@ e7d0858cb93a0e37d943a9cf940dad19 *R/p_nca_qr.R
 f3e66c43f793cb1888eca41ca3771858 *data/datalist
 7d496797b645e219cdf16252413c4dd0 *data/nca.example.RData
 e21947425449c54e4f93df892466663c *data/nca.example2.RData
-8cec003048505affc02943762e282073 *man/NCA-package.Rd
+1dbb98dad66a422b91067c985ed6eb15 *man/NCA-package.Rd
 3e88d7cea552f5d65882affacb5227bb *man/ceilings.Rd
 8069ba7fc0b686a7f07f85f08ac8d85b *man/line.colors.Rd
 8a7a03db41bcc68fb0b49ba5b79b0a6f *man/line.types.Rd
