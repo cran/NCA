@@ -9,10 +9,7 @@ function (loop.data, bn.data) {
   try(sfa <- sfa(y~x, form=type, silent=TRUE))
   options(warn=0)
   if (is.null(sfa)) {
-    message()
-    message("Ignoring SFA due to errors !")
-    message()
-
+    warning("Ignoring SFA due to errors", call.=FALSE)
     return(list(line=NULL, ceiling=NA, slope=NA, effect=NA,
               intercept=NA, above=NA, ineffs=list(x=NA, y=NA, abs=NA, rel=NA),
               bottleneck=NULL))

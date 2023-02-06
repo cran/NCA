@@ -13,7 +13,7 @@ function (plot, peers, labels, name = 'peer') {
   length(labels) != length(plot$x) ||
   length(unique(labels)) > 5) {
     labels <- replicate(length(plot$x), 'obs')
-    color.list <- c('blue')
+    color.list <- 'blue'
   } else {
     color.list <- c("blue", "green3", "cyan", "magenta", "gray")
   }
@@ -25,7 +25,7 @@ function (plot, peers, labels, name = 'peer') {
   if (ncol(peers) > 2) {
     peer_names <- peers[, 3]
   }
-  fig <- add_trace(fig, x = c(peers[, 1]), y = c(peers[, 2]),
+  fig <- add_trace(fig, x = peers[, 1], y = peers[, 2],
                    text = peer_names, type = 'scatter', mode = 'markers',
                    marker = list(color = 'red', size = 10),
                    hovertemplate = '<b>%{text}</b><br>%{x}, %{y}',
@@ -93,7 +93,7 @@ function (plot, peers, labels, name = 'peer') {
   }
   fig <- layout(fig, title = title, xaxis = xaxis, yaxis = yaxis)
 
-  print(fig)
+  p_suppress_warnings({print(fig)})
 }
 
 p_allColor <-
@@ -104,4 +104,16 @@ function (x) {
   })
 
   return(all(result))
+}
+
+p_suppress_warnings <- function(.expr) {
+  txt <- "Can't display both discrete & non-discrete data on same axis"
+  eval.parent(substitute(
+    withCallingHandlers(.expr, warning = function(w) {
+      cond <- startsWith(conditionMessage(w), txt)
+      if (cond) {
+        invokeRestart("muffleWarning")
+      }
+    })
+  ))
 }

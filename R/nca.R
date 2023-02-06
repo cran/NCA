@@ -14,14 +14,11 @@ nca_analysis <-
 function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
           corner=NULL, flip.x=FALSE, flip.y=FALSE, scope=NULL,
           bottleneck.x='percentage.range', bottleneck.y='percentage.range',
-          steps=10, step.size=NULL, cutoff=0, qr.tau=0.95, effect_aggregation=c(1),
+          steps=10, step.size=NULL, cutoff=0, qr.tau=0.95, effect_aggregation=1,
           test.rep=0, test.p_confidence=0.95, test.p_threshold=0) {
 
   # Cleans up any cluster registration
-  env <- utils::getFromNamespace(".foreachGlobals", "foreach")
-  if (!identical(ls(name=env), character(0))) {
-    rm(list=ls(name=env), pos=env)
-  }
+  p_cluster_cleanup()
 
   # Validate and clean data
   cleaned <- p_validate_clean(data, x, y)
@@ -35,7 +32,7 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
   if (!is.null(corner)) {
     corner <- p_validate_corner(x, corner)
     if (flip.x || flip.y) {
-      message("\nIgnoring 'flip.x' and 'flip.y': 'corner' is defined\n")
+      warning("Ignoring 'flip.x' and 'flip.y': 'corner' is defined", call.=FALSE)
     }
     flip.y <- all(corner %in% c(3, 4))
     flip.x <- corner %in% c(2, 4)
@@ -49,6 +46,10 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
 
   # Validate effect size aggregation
   effect_aggregation <- intersect(c(2, 3, 4), effect_aggregation)
+  if (length(effect_aggregation) > 0) {
+    total <- paste(c(1, effect_aggregation), collapse = ', ')
+    warning(paste("Using corners", total, "for effect_aggregation"), call.=FALSE)
+  }
 
   # Data object for bottlenecks
   bn.data <- p_bottleneck_data(data.x, data.y, scope, flip.y, ceilings,
@@ -67,13 +68,8 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
                       p_threshold=test.p_threshold)
 
   # Create cluster for parallisation if needed
-  if (detectCores() > 1 &&
-      length(ceilings) * length(data.x) * test.rep > 6000) {
-      if (grepl("windows", tolower(.Platform$OS.type))) {
-        cat("Preparing the analysis, this might take a few seconds...\n")
-      }
-      registerDoParallel(detectCores())
-  }
+  condition <- length(ceilings) * length(data.x) * test.rep > 6000
+  p_start_cluster(detectCores() > 1 && condition)
 
   # Create output lists
   plots <- list()

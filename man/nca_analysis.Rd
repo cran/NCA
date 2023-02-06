@@ -6,7 +6,7 @@
              corner=NULL, flip.x=FALSE, flip.y=FALSE, scope=NULL,
              bottleneck.x='percentage.range', bottleneck.y='percentage.range',
              steps=10, step.size=NULL, cutoff=0, qr.tau=0.95,
-             effect_aggregation = c(1), test.rep=0,
+             effect_aggregation = 1, test.rep=0,
              test.p_confidence=0.95, test.p_threshold=0)}
 \arguments{
 \item{data}{dataframe with columns of the variables}

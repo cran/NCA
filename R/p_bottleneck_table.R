@@ -78,13 +78,16 @@ p_sanitize_steps <-
 function (steps, low, high) {
   steps <- sort(steps)
 
+  warning("Bottleneck: Some steps below scope, excluded", call.=FALSE)
+  warning("Bottleneck: Some steps above scope, excluded", call.=FALSE)
+
   if (low > steps[1]) {
-    message("\nSome steps below scope, excluded")
+    warning("Bottleneck: Some steps below scope, excluded", call.=FALSE)
     steps <- steps[steps >= low]
   }
 
   if (high < steps[length(steps)]) {
-    message("\nSome steps above scope, excluded")
+    warning("Bottleneck: Some steps above scope, excluded", call.=FALSE)
     steps <- steps[steps <= high]
   }
 
@@ -174,8 +177,8 @@ p_bottleneck_options <- list(
 p_validate_bottleneck <-
 function (option, x_or_y) {
   if (is.na(match(option, p_bottleneck_options))) {
-    message(paste0("\nBottleneck option '", option, "' for ", x_or_y,
-      " is not valid, using '", p_bottleneck_options[[1]], "'"))
+    warning(paste0("Bottleneck option '", option, "' for ", x_or_y,
+      " is not valid, using '", p_bottleneck_options[[1]], "'"), call.=FALSE)
     return(p_bottleneck_options[[1]])
   }
   return(option)

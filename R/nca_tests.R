@@ -17,9 +17,6 @@ function (analyses, loop.data, test.params, effect_aggregation) {
   # But not for OLS
   ceilings <- names(analyses)[names(analyses) != "ols"]
 
-  # Ignore errors resulting from sampling
-  old.warning <- getOption("warn")
-  options(warn = -1)
   # Do you remember?
   start <- Sys.time()
   # Shorten the X name
@@ -40,6 +37,10 @@ function (analyses, loop.data, test.params, effect_aggregation) {
     }
     samples <- unique(samples)
   }
+
+  # Unset the seed, and we're done
+  set.seed(NULL)
+  message("\rDone sampling for tests", strrep(" ", 6))
 
   for (ceiling in ceilings) {
     cat(paste("Do test for   :", ceiling, "-", x.name))
@@ -64,11 +65,8 @@ function (analyses, loop.data, test.params, effect_aggregation) {
     effect.sims[[ceiling]] <- unlist(effect.sims[[ceiling]])
     effect.sims[[ceiling]] <- effect.sims[[ceiling]][!is.na(effect.sims[[ceiling]])]
 
-    cat(paste("\rDone test for :", ceiling, "-", x.name, "\n"))
+    message("\rDone test for:  ", ceiling, " - ", x.name,  strrep(" ", 5))
   }
-
-  # Start caring about errors again
-  options(warn = old.warning)
 
   for (ceiling in ceilings) {
     observed <- analyses[[ceiling]]$effect

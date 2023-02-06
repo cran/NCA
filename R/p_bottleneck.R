@@ -218,9 +218,9 @@ p_edge_cases <-
 function (mpx, bn.data, theo, flip.x) {
   mpx[mpx < (theo[1] + epsilon)] <- ifelse(flip.x, NA, -Inf)
   if (bn.data$cutoff == 0) {
-    mpx[mpx > (theo[2] - epsilon)] <- ifelse(flip.x, Inf, NA)
+    mpx[mpx > theo[2]] <- ifelse(flip.x, Inf, NA)
   } else if (bn.data$cutoff == 1) {
-    mpx[mpx > (theo[2] - epsilon)] <- theo[2]
+    mpx[mpx > theo[2]] <- theo[2]
   }
 
   return(mpx)

@@ -16,10 +16,10 @@ function (x, y, scope, flip.x, flip.y, id.x, qr.tau) {
   if (is.null(scope)) {
     scope.theo <-  scope.emp
   } else {
-    scope.theo <- c(min(scope.emp[1], scope[c(1, 2)]),
-                    max(scope.emp[2], scope[c(1, 2)]),
-                    min(scope.emp[3], scope[c(3, 4)]),
-                    max(scope.emp[4], scope[c(3, 4)]))
+    scope.theo <- c(min(scope.emp[1], scope[c(1, 2)], na.rm=TRUE),
+                    max(scope.emp[2], scope[c(1, 2)], na.rm=TRUE),
+                    min(scope.emp[3], scope[c(3, 4)], na.rm=TRUE),
+                    max(scope.emp[4], scope[c(3, 4)], na.rm=TRUE))
   }
   scope.area  <- (scope.theo[2] - scope.theo[1]) * (scope.theo[4] - scope.theo[3])
 

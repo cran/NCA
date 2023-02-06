@@ -14,6 +14,7 @@ p_ceilings_line <- c("ols", "cols", "qr",
 ceilings        <- c(p_ceilings_step, p_ceilings_line)
 p_no_bottleneck <- c("ols")
 # p_no_bottleneck <- c("ols", "ce_cm")
+p_no_peer_line  <- c("cols", "qr")
 
 # Keep in sync with line.colors.Rd and line.type.Rd
 line.colors     <- list(ols="green",        c_lp="blue",          cols="darkgreen",

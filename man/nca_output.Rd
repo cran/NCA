@@ -2,11 +2,11 @@
 \alias{nca_output}
 \title{display the result of the NCA analysis}
 \description{Show the plots, NCA summaries and bottleneck tables of a NCA analysis.}
-\usage{nca_output(model, plots=FALSE, plotly=FALSE, bottlenecks=FALSE,
+\usage{nca_output(model, plots=TRUE, plotly=FALSE, bottlenecks=FALSE,
            summaries=TRUE, test=FALSE, pdf=FALSE, path=NULL, selection = NULL)}
 \arguments{
 \item{model}{Displays output of the nca or nca_analysis command}
-\item{plots}{If true shows the scatter plot(s), one  for each independent variable.\cr
+\item{plots}{If true (default) show the scatter plot(s), one  for each independent variable.\cr
 In Rstudio the plots are shown the Plots window.}
 \item{plotly}{If true shows the interactive scatter plot(s), one for each independent variable.\cr
 In RStudio the plots are shown in the Viewer window. See Details.}

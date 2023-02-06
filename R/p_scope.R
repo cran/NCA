@@ -14,13 +14,23 @@ function (x, scope) {
   if (length(scope) != length(x)) {
     message()
     stop("The length of scope needs to be equal to the length of x \n",
-         "       or a single vector with 4 values!\n\n", call. = FALSE)
+         "       or a single vector with 4 values!\n\n", call.=F)
   }
 
   for (i in scope) {
     if (length(i) != 4) {
       message()
-      stop("The length of each scope segment needs to be 4!\n\n", call. = FALSE)
+      stop("The length of each scope segment needs to be 4!\n\n", call.=F)
+    }
+  }
+
+  for (i in scope) {
+    same <- i[c(3, 4)] == scope[[1]][c(3, 4)]
+    same <- same | (is.na(i[c(3, 4)]) & is.na(scope[[1]][c(3, 4)]))
+    same[is.na(same)] <- FALSE
+    if (!all(same)) {
+      warning("Scope is using different Ymin and Ymax for the same Y", call.=F)
+      break
     }
   }
 
@@ -41,5 +51,5 @@ function (x, scope) {
 
   message()
   stop("The length of scope needs to be equal to the length of x \n",
-       "       or a single vector with 4 values!\n\n", call. = FALSE)
+       "       or a single vector with 4 values!\n\n", call.=F)
 }

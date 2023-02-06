@@ -4,7 +4,7 @@ function (loop.data, bn.data) {
 
   if (!is.vector(peers) && length(peers) > 2) {
     K <- length(peers[,1])
-    factor = ifelse(sum(loop.data$flip.x, loop.data$flip.y) == 1, -1, 1)
+    factor <- ifelse(sum(loop.data$flip.x, loop.data$flip.y) == 1, -1, 1)
     f.obj <- c(K, -K, factor * sum(peers[,1]))
     f.con <- cbind(rep(1, K), rep(-1, K), factor * peers[,1])
     f.dir <- rep(ifelse(loop.data$flip.y, "<=", ">="), K)

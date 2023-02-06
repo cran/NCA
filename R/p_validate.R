@@ -4,7 +4,7 @@ function (data, x, y) {
 
   if (length(y) != 1) {
     message()
-    stop("Dependent variable can only be a single column!\n\n", call. = FALSE)
+    stop("Dependent variable can only be a single column!\n\n", call.=F)
   }
 
   # Replace all non-numeric values with NA (will be discarded later on)
@@ -17,20 +17,15 @@ function (data, x, y) {
 
 p_validate_ceilings <-
 function (methods) {
-  if (is.null(methods) || length(methods) == 0) {
-    warning("Invalid ceilings, using ols, ce_fdh and cr_fdh\n\n", call.=FALSE)
-    return ( c("ols", "ce_fdh", "cr_fdh") )
-  }
-
   valid_methods <- intersect(tolower(methods), ceilings)
 
   if (length(valid_methods) == 0) {
-    message()
-    stop("\nAt least 1 valid ceiling technique needs to be defined!\n\n", call.=FALSE)
+    warning("Invalid ceilings, using ols, ce_fdh and cr_fdh", call.=FALSE)
+    return ( c("ols", "ce_fdh", "cr_fdh") )
   } else if (length(valid_methods) != length(methods)) {
-    message()
-    warning(sprintf("Ignoring invalid ceiling(s) %s\n\n", setdiff(methods, valid_methods)), call.=FALSE)
-    message()
+    for (diff in setdiff(methods, valid_methods)) {
+      warning(sprintf("Ignoring invalid ceiling(s) '%s'", diff), call.=FALSE)
+    }
   }
 
   return ( valid_methods )
@@ -46,7 +41,7 @@ function (x, flip.x) {
     } else {
       message()
       stop("The length of 'flip.x' needs to be equal to the length of x ",
-           "or a single Boolean!\n", call. = FALSE)
+           "or a single Boolean!\n", call.=F)
     }
   }
 
@@ -64,14 +59,14 @@ function (x, corner) {
     } else {
       message()
       stop("The length of 'corner' needs to be equal to the length of x ",
-           "or a integer 1:4!\n", call. = FALSE)
+           "or a integer 1:4!\n", call.=F)
     }
   }
 
   # Check if all corners are 1=4
   if (!all(corner %in% 1:4)) {
     message()
-    stop("All corners must be an integer between 1 and 4 !\n", call. = FALSE)
+    stop("All corners must be an integer between 1 and 4 !\n", call.=F)
   }
 
   # Check if corners are all on top or all on bottom
@@ -79,7 +74,7 @@ function (x, corner) {
     message()
     stop("All corners need to be in the top half (1 and 2) \n       ",
          "or the bottom half (3 and 4).\n       ",
-         "You can not mix top and bottom !\n", call. = FALSE)
+         "You can not mix top and bottom !\n", call.=F)
   }
 
   return (corner)

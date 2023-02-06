@@ -1,5 +1,5 @@
 nca_output <-
-function (model, plots=FALSE, plotly=FALSE, bottlenecks=FALSE, summaries=TRUE,
+function (model, plots=TRUE, plotly=FALSE, bottlenecks=FALSE, summaries=TRUE,
           test=FALSE, pdf=FALSE, path=NULL, selection=NULL) {
   # model needs to be the output of the NCA command
 
@@ -50,8 +50,8 @@ function (model, plots=FALSE, plotly=FALSE, bottlenecks=FALSE, summaries=TRUE,
 
   if (test) {
     if (length(model$tests) == 0) {
-      message(paste("\nTests are selected in the output,",
-                    "but non were supplied by the analysis!\n"))
+      warning(paste("Tests are selected in the output,",
+                    "but non were supplied by the analysis!"), call.=F)
     }
     else {
       for (i in selection) {
