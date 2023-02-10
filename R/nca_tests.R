@@ -40,7 +40,6 @@ function (analyses, loop.data, test.params, effect_aggregation) {
 
   # Unset the seed, and we're done
   set.seed(NULL)
-  message("\rDone sampling for tests", strrep(" ", 6))
 
   for (ceiling in ceilings) {
     cat(paste("Do test for   :", ceiling, "-", x.name))

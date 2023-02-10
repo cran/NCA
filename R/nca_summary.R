@@ -73,7 +73,7 @@ function (summaries) {
     x.name <- names(summaries)[i]
     tmp <- summaries[[x.name]]$params
     for (j in 1:length(colnames(tmp))) {
-      simple[i, 2*j - 1] <- ifelse(is.nan(tmp[2,j]), NA, sprintf("%.3f", tmp[2,j]))
+      simple[i, 2*j - 1] <- ifelse(is.nan(tmp[2,j]), NA, sprintf("%.2f", tmp[2,j]))
       simple[i, 2*j] <- ifelse(is.nan(tmp[6,j]), NA, sprintf("%.3f", tmp[6,j]))
     }
   }

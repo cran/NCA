@@ -1,13 +1,14 @@
-b49792d14b639cf0cd226628fe96b648 *DESCRIPTION
+c39e2ff8cffab07d01f9403c79165d85 *DESCRIPTION
 5067c42f7e7c79cba12be3debe1df1bb *NAMESPACE
+6f17a58221def78a44533288600408ea *NEWS.md
 2fcc69a20308338193aa2602f78d2db8 *R/nca.R
 05479e7086b14eb4d05676c78ab85676 *R/nca_bottleneck.R
-8e464919e98fced65b7b92110b4aaa00 *R/nca_outliers.R
+aae452960fd444c954836f9e5f4251d9 *R/nca_outliers.R
 9d23c60b6574f9641c8bd64e8a1ec111 *R/nca_output.R
 b1462c8c2457870f7a6e011af30be0a8 *R/nca_plotly.R
 96d6fde89c77e30ae12dd32f631b16da *R/nca_plots.R
-7efee2790e42f413208231c9d4dcc330 *R/nca_summary.R
-f896b71e66fd51f5c4fd8f434cebce98 *R/nca_tests.R
+81f224d158743312b56d42c9c0a4df8e *R/nca_summary.R
+762f0141a6d5678b0244cce02b542795 *R/nca_tests.R
 5e1b5ee3320981bfbf4fcaac437a0d2c *R/onAttach.R
 2b3e88b47841e3b23daf968521b6c0c6 *R/p_above.R
 8f985eeb31c7b5c1be7977fa4b76a445 *R/p_bottleneck.R
@@ -44,7 +45,7 @@ b0087164d41ac236fdc35761e20f756c *R/p_validate.R
 f3e66c43f793cb1888eca41ca3771858 *data/datalist
 7d496797b645e219cdf16252413c4dd0 *data/nca.example.RData
 e21947425449c54e4f93df892466663c *data/nca.example2.RData
-3b15a7edb6d3e5503fcc104302aa0c26 *man/NCA-package.Rd
+2d45015e8b10d5266992fc478761720b *man/NCA-package.Rd
 3e88d7cea552f5d65882affacb5227bb *man/ceilings.Rd
 8069ba7fc0b686a7f07f85f08ac8d85b *man/line.colors.Rd
 8a7a03db41bcc68fb0b49ba5b79b0a6f *man/line.types.Rd

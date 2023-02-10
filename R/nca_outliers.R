@@ -152,7 +152,7 @@ p_get_all_names <- function (data, peers, global, params, k) {
   tmp.scope <- c(3, 4, 5, 6)
   for (idx in 1:4) {
     tmp <- data[data[[tmp.var[idx]]] %in% global[tmp.scope[idx]],]
-    if (k > nrow(tmp)) {
+    if (k >= nrow(tmp)) {
       all.names <- c(all.names, rownames(tmp))
     }
   }
