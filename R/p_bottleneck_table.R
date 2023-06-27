@@ -78,9 +78,6 @@ p_sanitize_steps <-
 function (steps, low, high) {
   steps <- sort(steps)
 
-  warning("Bottleneck: Some steps below scope, excluded", call.=FALSE)
-  warning("Bottleneck: Some steps above scope, excluded", call.=FALSE)
-
   if (low > steps[1]) {
     warning("Bottleneck: Some steps below scope, excluded", call.=FALSE)
     steps <- steps[steps >= low]

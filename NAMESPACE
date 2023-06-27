@@ -3,6 +3,7 @@ export(nca, nca_analysis, nca_output, nca_outliers,
 S3method(plot, nca_result)
 S3method(print, nca_result)
 S3method(summary, nca_result)
+S3method(print, outliers)
 import(gplots)
 import(ggplot2)
 import(grid)

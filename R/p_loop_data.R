@@ -20,6 +20,15 @@ function (x, y, scope, flip.x, flip.y, id.x, qr.tau) {
                     max(scope.emp[2], scope[c(1, 2)], na.rm=TRUE),
                     min(scope.emp[3], scope[c(3, 4)], na.rm=TRUE),
                     max(scope.emp[4], scope[c(3, 4)], na.rm=TRUE))
+    if (any(sort(scope[1:2]) != sort(scope.theo[1:2])) ||
+        any(sort(scope[3:4]) != sort(scope.theo[3:4]))) {
+      # Needed to collapse multiple scope warnings
+      if (is.null(.GlobalEnv$nca_scope_warnings)) {
+        .GlobalEnv$nca_scope_warnings <- TRUE
+        warning(
+          "Theorectical scope has been adjusted to include all observations", call.=FALSE)
+      }
+    }
   }
   scope.area  <- (scope.theo[2] - scope.theo[1]) * (scope.theo[4] - scope.theo[3])
 

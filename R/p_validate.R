@@ -1,5 +1,5 @@
 p_validate_clean <-
-function (data, x, y) {
+function (data, x, y, outliers = FALSE) {
   data <- as.data.frame(data)
 
   if (length(y) != 1) {
@@ -10,6 +10,16 @@ function (data, x, y) {
   # Replace all non-numeric values with NA (will be discarded later on)
   for (i in 1:ncol(data)) {
     suppressWarnings(data[[i]] <- as.numeric(as.character(data[[i]])))
+  }
+
+  # Needed to collapse multiple scope warnings
+  found <- FALSE
+  for (i in 1:sys.nframe()) {
+    haystack <- deparse(sys.calls()[[sys.nframe() - i + 1]])[1]
+    found <- found || grepl("nca_outliers(", haystack, fixed = TRUE)
+  }
+  if (outliers == found) {
+    .GlobalEnv$nca_scope_warnings <- NULL
   }
 
   return ( list(x=data[x], y=data[y]) )

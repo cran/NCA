@@ -137,6 +137,10 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
   # Shut down cluster for parallisation
   stopImplicitCluster()
 
+  # Add the method peers
+  method_peers <- p_method_peers(peers, plots, ceilings)
+  peers <- c(peers, method_peers)
+
   model <- list(plots=plots,
                 summaries=summaries,
                 bottlenecks=bn.data$bottlenecks,

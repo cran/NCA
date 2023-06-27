@@ -174,12 +174,12 @@ function (params) {
       } else if (row == 4 || row == 5) {
         s <- params[row, col]
         if (!p_is_number(s)) {
-          pretty[row, col] <- ""
+          pretty[row, col] <- ifelse(row == 5 && is.na(s), "NA    ", "")
         } else if (s %% 1 == 0) {
-          s = p_pretty_number(s, "", 0)
+          s <- p_pretty_number(s, "", 0)
           pretty[row, col] <- sprintf("%s%%   ", s)
         } else {
-          s = p_pretty_number(s, "", 1)
+          s <- p_pretty_number(s, "", 1)
           pretty[row, col] <- sprintf("%s%% ", s)
         }
       } else {

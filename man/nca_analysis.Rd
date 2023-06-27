@@ -141,8 +141,8 @@ model <- nca_analysis(data, c(1, 2), 3, cutoff=2)
 
 # To run tests, the test.rep needs to be larger than 0
 # Optionally the p_confidence (default 0.95) and the p_threshold (default 0) can be set
-\donttest{model <- nca_analysis(data, c(1, 2), 3, test.rep=1000, test.p_confidence=0.9, test.p_threshold=0.05)}
-\dontshow{model <- nca_analysis(data, c(1, 2), 3, test.rep=100, test.p_confidence=0.9, test.p_threshold=0.05)}
+\donttest{model <- nca_analysis(data, c(1), 3, test.rep=1000, test.p_confidence=0.9, test.p_threshold=0.05)}
+\dontshow{model <- nca_analysis(data, c(1), 3, test.rep=100, test.p_confidence=0.9, test.p_threshold=0.05)}
 # The output of the tests can be shown via nca_output with test=TRUE
 nca_output(model, test=TRUE)
 }

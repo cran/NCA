@@ -18,8 +18,8 @@ function (loop.data, slope, intercept) {
 
   # Get the intersections of the line and theo[1] / theo[2]
   theo <- loop.data$scope.theo
-  p.l <- c(theo[1], slope * loop.data$scope.theo[1] + intercept)
-  p.r <- c(theo[2], slope * loop.data$scope.theo[2] + intercept)
+  p.l <- c(theo[1], slope * theo[1] + intercept)
+  p.r <- c(theo[2], slope * theo[2] + intercept)
 
   # Line completly outside scope
   if (p.l[2] > theo[4] && p.r[2] > theo[4]) {
