@@ -19,7 +19,7 @@ function (data, x, y, outliers = FALSE) {
     found <- found || grepl("nca_outliers(", haystack, fixed = TRUE)
   }
   if (outliers == found) {
-    .GlobalEnv$nca_scope_warnings <- NULL
+    .GlobalEnv$scope_warnings_nca <- NULL
   }
 
   return ( list(x=data[x], y=data[y]) )

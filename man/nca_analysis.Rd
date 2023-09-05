@@ -7,7 +7,7 @@
              bottleneck.x='percentage.range', bottleneck.y='percentage.range',
              steps=10, step.size=NULL, cutoff=0, qr.tau=0.95,
              effect_aggregation = 1, test.rep=0,
-             test.p_confidence=0.95, test.p_threshold=0)}
+             test.p_confidence=0.95, test.p_threshold=0.05)}
 \arguments{
 \item{data}{dataframe with columns of the variables}
 \item{x}{index or name (or a vector of those) with independent variable(s) x}
@@ -36,7 +36,7 @@
 \item{test.rep}{number of resamples in the statistical approximate permutation test. For test.rep = 0 no statistical test is performed}
 \item{test.p_confidence}{confidence level of the estimated p-value. \cr
 Is used to calculate the p-accuracy for a given number of resamples (test.rep), default 0.95.}
-\item{test.p_threshold}{define the threshold significance level in the returned plot of the statistical test, default 0 (returns nothing)}\cr
+\item{test.p_threshold}{define the threshold significance level in the returned plot of the statistical test, default 0.05}\cr
 }
 
 \value{Returns a list of 6 items (see examples for further explanation):

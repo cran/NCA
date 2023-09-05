@@ -1,3 +1,9 @@
+# NCA 3.3.3
+- 
+- nca_analysis: fix bug in method peers
+- nca_analysis: layout changes in tests
+- nca_analysis: test.p_threshold 0.05 as default   
+
 # NCA 3.3.2
 
 - nca_outliers: fix bug when no outliers if k == 1
@@ -7,6 +13,7 @@
 - nca_outliers: add the scope parameter
 - nca_analysis: set fit to `NA` if fit > 100%
 - nca_analysis: add ceiling-specific peers
+- nca_analysis: add method peers
 
 # NCA 3.3.1
 

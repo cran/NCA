@@ -23,8 +23,8 @@ function (x, y, scope, flip.x, flip.y, id.x, qr.tau) {
     if (any(sort(scope[1:2]) != sort(scope.theo[1:2])) ||
         any(sort(scope[3:4]) != sort(scope.theo[3:4]))) {
       # Needed to collapse multiple scope warnings
-      if (is.null(.GlobalEnv$nca_scope_warnings)) {
-        .GlobalEnv$nca_scope_warnings <- TRUE
+      if (is.null(.GlobalEnv$scope_warnings_nca)) {
+        .GlobalEnv$scope_warnings_nca <- TRUE
         warning(
           "Theorectical scope has been adjusted to include all observations", call.=FALSE)
       }

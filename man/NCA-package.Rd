@@ -1,12 +1,13 @@
 \name{NCA-package}
+\alias{NCA-package}
 \docType{package}
 \title{Necessary Condition Analysis}
 \description{The NCA package implements Necessary Condition Analysis (NCA) as developed by Dul (2016). For running the NCA package a data file (e.g., mydata.csv, which contains the input data) must be available. An example data file (presented in above article) is included in the package. The user must load the data and call the nca function.}
 \details{\tabular{ll}{
 Package:  \tab NCA\cr
 Type:     \tab Package\cr
-Version:  \tab 3.3.2\cr
-Date:     \tab 2023-06-26\cr
+Version:  \tab 3.3.3\cr
+Date:     \tab 2023-09-04\cr
 License:  \tab GPL (>= 3)\cr}
 }
 \author{
@@ -15,12 +16,11 @@ Maintainer: Govert Buijs \email{buijs@rsm.nl}
 }
 \references{
 Dul, J. 2016. Necessary Condition Analysis (NCA).Logic and methodology of 'necessary but not sufficient' causality.
-Organizational Research Methods 19(1), 10-52.
-\href{https://journals.sagepub.com/doi/full/10.1177/1094428115584005}{https://journals.sagepub.com/doi/full/10.1177/1094428115584005}\cr
+Organizational Research Methods 19(1), 10-52. \doi{10.1177/1094428115584005}\cr
 Dul, J. (2020). Conducting Necessary Condition Analysis. Sage publishers. ISBN: 9781526460141.
 \href{https://uk.sagepub.com/en-gb/eur/conducting-necessary-condition-analysis-for-business-and-management-students/book262898}{https://uk.sagepub.com/en-gb/eur/conducting-necessary-condition-analysis-for-business-and-management-students/book262898}\cr
 Dul, J., van der Laan, E., & Kuik, R. (2020). A statistical significance test for Necessary Condition Analysis. Organizational Research Methods, 23(2), 385-395.
-\href{https://journals.sagepub.com/doi/10.1177/1094428118795272}{https://journals.sagepub.com/doi/10.1177/1094428118795272}
+\doi{10.1177/1094428118795272}
 
 }
 \seealso{

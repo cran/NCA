@@ -137,9 +137,14 @@ p_method_peers <- function (peers, plots, methods) {
         if (method == 'c_lp') {
           intercept <- plot$lines$c_lp[1]
           scope <- plot$lines$c_lp[2]
-          df <- cbind(df, abs(intercept + scope * df[, 1] - df[, 2]))
-          df <- df[order(df[, 3]),]
-          df <- df[c(1, 2), c(1, 2)]
+          if (is.null(intercept) || is.null(scope)) {
+            df <- NULL
+          }
+          else {
+            df <- cbind(df, abs(intercept + scope * df[, 1] - df[, 2]))
+            df <- df[order(df[, 3]),]
+            df <- df[c(1, 2), c(1, 2)]
+          }
         }
 
         if (!is.null(df)) {

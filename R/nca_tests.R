@@ -144,8 +144,8 @@ function (ceiling, ceiling_test, pdf=FALSE, path=NULL) {
   x.high <- max(data, observed) + 0.01
 
   label.main <- sprintf("X=%s  Y=%s  %s\n", names[1], names[2], ceiling)
-  label.random <- ifelse(p_threshold > 0, sprintf(
-      "----  random (d = %.3f, p_threshold %.2f)", threshold.value, p_threshold), "")
+  label.threshold <- ifelse(p_threshold > 0, sprintf(
+      "----  threshold (d = %.2f, p_threshold %.2f)", threshold.value, p_threshold), "")
   label.p <- ""
   if (!is.na(p_value)) {
     rep <- ceiling_test$test.params$rep
@@ -159,11 +159,12 @@ function (ceiling, ceiling_test, pdf=FALSE, path=NULL) {
       label.p <- sprintf(", p = %.3f, rep = %d", p_value, rep)
     }
   }
-  label.observed <- sprintf("observed (d = %.3f%s)", observed, label.p)
+  label.observed <- sprintf("observed (d = %.2f%s)", observed, label.p)
 
   # Add data plot and title
   obj <- qplot(data, bins = bin.count, geom = 'histogram',
-               xlim = c(x.low, x.high), xlab = "effect size",
+               xlim = c(x.low, x.high),
+               xlab = "Permutated effect sizes", ylab = "Frequency",
                fill = I("white"), col = I("black"), na.rm = TRUE)
   obj <- obj + labs(title = label.main, subtitle = "")
   obj <- obj + theme(plot.title=element_text(hjust=0.5))
@@ -188,7 +189,7 @@ function (ceiling, ceiling_test, pdf=FALSE, path=NULL) {
   plot(obj)
 
   # Add legend for lines
-  p_add_legend(label.random, label.observed, p_threshold)
+  p_add_legend(label.threshold, label.observed, p_threshold)
 
   if (pdf) {
     dev.off()
@@ -197,7 +198,7 @@ function (ceiling, ceiling_test, pdf=FALSE, path=NULL) {
 }
 
 p_add_legend <-
-function (label.random, label.observed, p_threshold) {
+function (label.threshold, label.observed, p_threshold) {
   gp.r <- gpar(col = "darkgreen", fontsize = 11)
   gp.o <- gpar(col = "red", fontsize = 11)
   gp.o1 <- gpar(col = "red", fontsize = 10, fontface="bold")
@@ -208,7 +209,7 @@ function (label.random, label.observed, p_threshold) {
     pos.y1 <- unit(1, "npc") - unit(3.0, "line")
     pos.y2 <- unit(1, "npc") - unit(3.0, "line")
 
-    grid.text(label.random,   pos.x,  pos.y,  just="left", gp = gp.r)
+    grid.text(label.threshold,   pos.x,  pos.y,  just="left", gp = gp.r)
     grid.text("___",          pos.x,  pos.y1, just="left", gp = gp.o1)
     grid.text(label.observed, pos.x1, pos.y2, just="left", gp = gp.o)
   }

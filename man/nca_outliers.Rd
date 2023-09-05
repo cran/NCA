@@ -24,7 +24,6 @@ In RStudio the plots are shown in the Viewer window. See Details.}
 \item{condensed}{If true and k > 1, hide outlier combinations for which the effect size is\cr
 not increased compared to the effect size of single elements of that combination. (default FALSE)}
 }
-
 \details{
 \strong{Outliers}\cr
 The potential outliers are displayed with the original effects size and the
