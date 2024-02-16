@@ -23,9 +23,12 @@ function (loop.data, bn.data, slope, intercept) {
   na.value <- p_na_value(mpx, loop.data, bn.data)
 
   # Display Xs as percentage (either cutoff or 0-high) or percentile
+  mpx.actual <- mpx
   mpx <- p_transform_mpx(loop.data, mpx, bn.data$bn.x.id)
+  pretty_mpx <- p_pretty_mpx(loop.data, mpx, nn.value, na.value, precision.x)
+  attr(pretty_mpx, "mpx.actual") <- mpx.actual
 
-  return( p_pretty_mpx(loop.data, mpx, nn.value, na.value, precision.x) )
+  return( pretty_mpx )
 }
 
 p_bottleneck_ce <-
@@ -40,22 +43,26 @@ function (loop.data, bn.data, peers, type) {
   precision.x <- ifelse(bn.data$bn.x.id %in% c(1, 2, 4), 1, 3)
 
   if (type == "fdh") {
-    mpx <- p_bottleneck_fdh(bn.data, peers, theo, flip.x, flip.y)
+    mpx <- p_bottleneck_fdh(bn.data, peers, flip.y)
   } else if (type == "vrs") {
-    mpx <- p_bottleneck_vrs(bn.data, peers, theo, flip.x, flip.y)
+    mpx <- p_bottleneck_vrs(bn.data, peers, flip.y)
   }
 
+  mpx <- p_edge_cases(mpx, bn.data, theo, flip.x, FALSE)
   nn.value <- p_nn_value(mpx, loop.data, bn.data)
   na.value <- p_na_value(mpx, loop.data, bn.data)
 
   # Display Xs as percentage (either cutoff or 0-high) or percentile
+  mpx.actual <- mpx
   mpx <- p_transform_mpx(loop.data, mpx, bn.data$bn.x.id)
+  pretty_mpx <- p_pretty_mpx(loop.data, mpx, nn.value, na.value, precision.x)
+  attr(pretty_mpx, "mpx.actual") <- mpx.actual
 
-  return( p_pretty_mpx(loop.data, mpx, nn.value, na.value, precision.x) )
+  return( pretty_mpx )
 }
 
 p_bottleneck_fdh <-
-function (bn.data, peers, theo, flip.x, flip.y) {
+function (bn.data, peers, flip.y) {
   mpy <- bn.data$mpy
   mpx <- matrix(nrow=length(mpy), ncol=1)
   x.peers <- peers[,1]
@@ -77,13 +84,11 @@ function (bn.data, peers, theo, flip.x, flip.y) {
     }
   }
 
-  mpx <- p_edge_cases(mpx, bn.data, theo, flip.x)
-
   return( mpx )
 }
 
 p_bottleneck_vrs <-
-function (bn.data, peers, theo, flip.x, flip.y) {
+function (bn.data, peers, flip.y) {
   mpy <- bn.data$mpy
   mpx <- matrix(nrow=length(mpy), ncol=1)
   x.peers <- peers[,1]
@@ -110,8 +115,6 @@ function (bn.data, peers, theo, flip.x, flip.y) {
       mpx[j, 1] <- calculate_x(mpy[j,1], peers, index)
     }
   }
-
-  mpx <- p_edge_cases(mpx, bn.data, theo, flip.x)
 
   return( mpx )
 }
@@ -150,6 +153,7 @@ function (loop.data, mpx, bn.x.id) {
       tmp <- mpx - epsilon
     }
     mpx <- matrix(100 * percentile(tmp), ncol = 1)
+    mpx[mpx == 0] <- Inf
   }
 
   return( mpx )
@@ -215,13 +219,14 @@ function (loop.data, mpx, nn.value, na.value, precision.x) {
 }
 
 p_edge_cases <-
-function (mpx, bn.data, theo, flip.x) {
+function (mpx, bn.data, theo, flip.x, use.epsilon=FALSE) {
+  tmp <- ifelse(use.epsilon, epsilon, 0)
   mpx[mpx < (theo[1] + epsilon)] <- ifelse(flip.x, NA, -Inf)
   if (bn.data$cutoff == 0) {
-    mpx[mpx > theo[2]] <- ifelse(flip.x, Inf, NA)
+    mpx[mpx > (theo[2] - tmp)] <- ifelse(flip.x, Inf, NA)
   } else if (bn.data$cutoff == 1) {
-    mpx[mpx > theo[2]] <- theo[2]
+    mpx[mpx > (theo[2] - tmp)] <- theo[2]
   }
 
-  return(mpx)
+  return( mpx )
 }

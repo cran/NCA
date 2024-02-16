@@ -67,7 +67,8 @@ function (model, plots=TRUE, plotly=FALSE, bottlenecks=FALSE, summaries=TRUE,
       if (!isTRUE(plotly)) {
         labels <- plotly
       }
-      p_display_plotly(model$plots[[i]], model$peers[[i]], labels)
+      peers <- p_aggregate_peers(model$peers, i)
+      p_display_plotly(model$plots[[i]], peers, labels)
     }
   }
 

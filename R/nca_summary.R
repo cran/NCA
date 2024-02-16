@@ -43,11 +43,9 @@ function (summary) {
   y.name <- summary$names[2]
   title <- paste("NCA Parameters :", p_generate_title(x.name, y.name))
 
-  cat("\n----------------------------------------")
-  cat("----------------------------------------\n")
+  cat("\n", strrep('-', 80), "\n", sep = "")
   message(title)
-  cat("----------------------------------------")
-  cat("----------------------------------------\n")
+  cat(strrep('-', 80), "\n", sep = "")
   print(p_pretty_global(summary$global))
   cat("\n")
 
@@ -86,12 +84,10 @@ function (summaries) {
   simple[simple == "NA"] <- NA
   colnames(simple)[colSums(!is.na(simple)) == 0] <- ''
 
-  cat("\n----------------------------------------")
-  cat("----------------------------------------\n")
+  cat("\n", strrep('-', 80), "\n", sep = "")
   message("Effect size(s):")
   print(simple, na.print="", quote=FALSE)
-  cat("----------------------------------------")
-  cat("----------------------------------------\n\n")
+  cat(strrep('-', 80), "\n\n", sep = "")
 }
 
 p_summary <-

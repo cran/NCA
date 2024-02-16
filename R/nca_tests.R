@@ -42,7 +42,7 @@ function (analyses, loop.data, test.params, effect_aggregation) {
   set.seed(NULL)
 
   for (ceiling in ceilings) {
-    cat(paste("Do test for   :", ceiling, "-", x.name))
+    cat("Do test for  : ", ceiling, "-", x.name)
 
     effect.sims[[ceiling]] <- foreach (sample=iter(samples)) %dopar% {
       loop.data$y <- y_org[unlist(sample)]
@@ -64,7 +64,7 @@ function (analyses, loop.data, test.params, effect_aggregation) {
     effect.sims[[ceiling]] <- unlist(effect.sims[[ceiling]])
     effect.sims[[ceiling]] <- effect.sims[[ceiling]][!is.na(effect.sims[[ceiling]])]
 
-    message("\rDone test for:  ", ceiling, " - ", x.name,  strrep(" ", 5))
+    cat("\rDone test for: ", ceiling, "-", x.name,  strrep(" ", 5), "\n")
   }
 
   for (ceiling in ceilings) {

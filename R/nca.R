@@ -137,14 +137,15 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
   # Shut down cluster for parallisation
   stopImplicitCluster()
 
-  # Add the method peers
-  method_peers <- p_method_peers(peers, plots, ceilings)
-  peers <- c(peers, method_peers)
+  # Add the bottlenecks with mpy attribute
+  bottlenecks <- bn.data$bottlenecks
+  attr(bottlenecks, "mpy") <- bn.data$mpy
+  attr(bottlenecks, "flip.y") <- flip.y
 
   model <- list(plots=plots,
                 summaries=summaries,
-                bottlenecks=bn.data$bottlenecks,
-                peers=peers,
+                bottlenecks=bottlenecks,
+                peers=p_method_peers(peers, plots, ceilings),
                 tests=tests,
                 test.time=p_test_time(test.time))
   class(model) <- "nca_result"

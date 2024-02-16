@@ -120,13 +120,13 @@ p_method_peers <- function (peers, plots, methods) {
 
   method_peers <- list()
   for (method in methods) {
-    if (method %in% c("ols", "qr", "cols")) {
+    if (method == "ols") {
       next
     }
-    if (method %in% c("ce_fdh", "cr_fdh")) {
+    if (method %in% p_ceilings_step) {
       method_peers[[method]] <- peers
     }
-    if (method %in% c("ce_vrs", "cr_vrs", "c_lp")) {
+    if (method %in% p_ceilings_line) {
       tmp_list <- list()
       for (x.name in names(plots)) {
         plot <- plots[[x.name]]
@@ -134,16 +134,24 @@ p_method_peers <- function (peers, plots, methods) {
                           flip.x=plot$flip.x, flip.y=plot$flip.y)
         df <- p_peers(loop.data, vrs = TRUE)
 
-        if (method == 'c_lp') {
-          intercept <- plot$lines$c_lp[1]
-          scope <- plot$lines$c_lp[2]
+        if (method %in% c("c_lp", "qr", "cols")) {
+          if (method %in% c("qr", "cols")) {
+            intercept <- unname(coef(plot$lines[[method]])["(Intercept)"])
+            scope <- unname(coef(plot$lines[[method]])["x"])
+          }
+          else {
+            intercept <- plot$lines[[method]][1]
+            scope <- plot$lines[[method]][2]
+          }
+
           if (is.null(intercept) || is.null(scope)) {
             df <- NULL
           }
           else {
             df <- cbind(df, abs(intercept + scope * df[, 1] - df[, 2]))
             df <- df[order(df[, 3]),]
-            df <- df[c(1, 2), c(1, 2)]
+            delta <- abs(df[1, 2] / 1e4)
+            df <- subset(df[, c(1, 2)], abs(df[, 3]) < delta)
           }
         }
 
@@ -154,5 +162,16 @@ p_method_peers <- function (peers, plots, methods) {
       method_peers[[method]] <- tmp_list
     }
   }
-  return(method_peers)
+
+  return( method_peers )
+}
+
+p_aggregate_peers <- function(model.peers, x)
+{
+  # Aggregate all ceiling peers for independent variable x
+  peers <- NULL
+  for (ceiling in names(model.peers)) {
+    peers <- rbind(peers, model.peers[[ceiling]][[x]])
+  }
+  return ( unique(peers) )
 }

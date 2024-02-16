@@ -1,5 +1,5 @@
 p_display_plotly <-
-function (plot, peers, labels, name = 'peer') {
+function (plot, peers, labels, name = 'peer', coord.list = NULL) {
   # Get the params for plotting
   params <- get_plot_params()
   line_colors <- params[[1]]
@@ -9,9 +9,7 @@ function (plot, peers, labels, name = 'peer') {
   point_color <- params[[5]]
 
   # Missing (or too much) labels
-  if (is.null(labels) ||
-  length(labels) != length(plot$x) ||
-  length(unique(labels)) > 5) {
+  if (is.null(labels) || length(labels) != length(plot$x) || length(unique(labels)) > 5) {
     labels <- replicate(length(plot$x), 'obs')
     color.list <- 'blue'
   } else {
@@ -21,15 +19,17 @@ function (plot, peers, labels, name = 'peer') {
   fig <- plot_ly(colors = color.list)
 
   # Add peers as separate trace first
-  peer_names <- rownames(peers)
-  if (ncol(peers) > 2) {
-    peer_names <- peers[, 3]
+  if (!is.null(peers)) {
+    peer_names <- rownames(peers)
+    if (ncol(peers) > 2) {
+      peer_names <- peers[, 3]
+    }
+    fig <- add_trace(fig, x = peers[, 1], y = peers[, 2],
+                     text = peer_names, type = 'scatter', mode = 'markers',
+                     marker = list(color = 'red', size = 10),
+                     hovertemplate = '<b>%{text}</b><br>%{x}, %{y}',
+                     showlegend = TRUE, name = name)
   }
-  fig <- add_trace(fig, x = peers[, 1], y = peers[, 2],
-                   text = peer_names, type = 'scatter', mode = 'markers',
-                   marker = list(color = 'red', size = 10),
-                   hovertemplate = '<b>%{text}</b><br>%{x}, %{y}',
-                   showlegend = TRUE, name = name)
 
   # Add the scatter plot for the remaining points, use colors if wanted
   include <- !(rownames(plot$x) %in% rownames(peers))
@@ -42,6 +42,10 @@ function (plot, peers, labels, name = 'peer') {
 
   # Print the lines
   for (method in plot$methods) {
+    if (method == "ols") {
+      next
+    }
+
     line <- plot$lines[[method]]
     line_color <- line_colors[[method]]
     line_type <- line_types[[method]]
@@ -78,6 +82,23 @@ function (plot, peers, labels, name = 'peer') {
       df <- df[df$y >= (scope[3] - epsilon) & df$y <= (scope[4] + epsilon),]
       fig <- add_lines(fig, x = df$x, y = df$y,
                        line = line_list, showlegend = TRUE, name = method)
+    }
+  }
+
+  # Add the bottleneck lines
+  # TODO https://plotly.com/r/reference/layout/annotations/
+  done <- NULL
+  for (coord in coord.list) {
+    line <- list(width=1, dash="dot", color="lightgrey")
+    fig <- add_lines(fig, x = c(coord[1], coord[2]), y = coord[4], line=line, showlegend = F)
+    fig <- add_lines(fig, x = coord[2], y = c(coord[3], coord[4]), line=line, showlegend = F)
+    if (!(coord[4] %in% done)) {
+      done <- c(done, coord[4])
+      y.pretty <- p_pretty_number(coord[4], prec = "auto")
+      a <- list(x = coord[1], y = coord[4], xref = "x", yref = "y", ax = -20, ay = -20,
+                text = y.pretty, font = list(size = 10),
+                arrowsize = 0.5, arrowwidth = 2, arrowcolor = "lightgrey")
+      fig <- layout(fig, annotations = a)
     }
   }
 

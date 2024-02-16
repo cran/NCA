@@ -43,7 +43,7 @@ Is used to calculate the p-accuracy for a given number of resamples (test.rep), 
 \item{plots}{A list of plot-data for each x-y combination}
 \item{summaries}{A list of dataframes with the summaries for each x-y combination}
 \item{bottlenecks}{A list of dataframes with a bottleneck table for each ceiling technique}
-\item{peers}{A list of peers for each independent variable.
+\item{peers}{A list of ceilings, with a list of peers for each independent variable.
 Peers are corner points of the CE-FDH ceiling line (e.g., the northwest-corners points for corner = 1)}
 \item{tests}{The results of the test for each independent variable (not human friendly, use nca_output)}
 \item{test.time}{The total time needed to run the tests for all independent variables}
@@ -108,7 +108,10 @@ model <- nca_analysis(data, c(1, 2), 3, flip.x=c(TRUE, FALSE), flip.y=TRUE)
 # Use a theoretical scope instead of the (calculated) empirical scope
 model <- nca_analysis(data, c(1, 2), 3, scope=c(0, 120, 0, 240))
 
-# By default the bottleneck tables use percentages of the range for the x and y values.
+# Display the peers for a ceiling and an independent variable
+print(model$peers$ce_fdh$Individualism)
+
+# By default, the bottleneck tables use percentages of the range for the x and y values.
 # Using the percentage of the max value is also possible
 model <- nca_analysis(data, c(1, 2), 3, bottleneck.y='percentage.max')
 

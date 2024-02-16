@@ -33,9 +33,8 @@ function (bn, method, title) {
   tmp <- matrix(nrow=rows, ncol=x.length)
   for (i in 1:x.length) {
     if (bn.x == 'percentile') {
-      suppressWarnings(
-        cases <- round(size * as.numeric(bn[,i+1]) / 100, digits = 0)
-      )
+      suppressWarnings(cases <- round(size * as.numeric(bn[,i+1]) / 100, digits = 0))
+      cases <- ifelse(bn[,i+1] == "NN", 0, cases)
       tmp[, i] <- paste0(bn[,i+1], ' (', as.character(cases), ')')
     } else {
       tmp[, i] <- bn[,i+1]
@@ -51,7 +50,7 @@ function (bn, method, title) {
   } else {
     digits <- p_get_digits(bn[,1])
   }
-  col.names <- as.character(c(1:x.length))
+  col.names <- as.character(1:x.length)
   row.names <- sapply(bn[,1], p_pretty_number, "", digits)
 
   if (!is.null(title) && title != "") {
@@ -93,9 +92,8 @@ function (bn, method, title) {
   tmp <- matrix(nrow=rows, ncol=x.length)
   for (i in 1:x.length) {
     if (bn.x == 'percentile') {
-      suppressWarnings(
-        cases <- round(size * as.numeric(bn[,i+1]) / 100, digits = 0)
-      )
+      suppressWarnings(cases <- round(size * as.numeric(bn[,i+1]) / 100, digits = 0))
+      cases <- ifelse(bn[,i+1] == "NN", 0, cases)
       tmp[, i] <- paste0(bn[,i+1], ' (', as.character(cases), ')')
     } else {
       tmp[, i] <- bn[,i+1]
@@ -111,20 +109,18 @@ function (bn, method, title) {
   } else {
     digits <- p_get_digits(bn[,1])
   }
-  colnames(tmp) <- as.character(c(1:x.length))
+  colnames(tmp) <- as.character(1:x.length)
   rownames(tmp) <- sapply(bn[,1], p_pretty_number, "", digits, TRUE)
 
   # Display header
   fmt <- sprintf(" %%-%ds", max(nchar(names)))
-  cat("\n----------------------------------------")
-  cat("----------------------------------------\n")
+  cat("\n", strrep('-', 80), "\n", sep = "")
   message(title, " ", method, " (cutoff = ", cutoff, ")")
   message("Y", sprintf(fmt, names[1]), " (", bn.y, ")")
   for (i in seq(x.length)) {
     message(i, sprintf(fmt, names[i+1]), " (", bn.x ,")")
   }
-  cat("----------------------------------------")
-  cat("----------------------------------------\n")
+  cat(strrep('-', 80), "\n", sep = "")
 
   # Display table, insert the 'Y' for the first column
   cat("Y")

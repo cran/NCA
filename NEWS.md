@@ -1,5 +1,12 @@
+# NCA 4.0.0
+
+- nca_random: added function to generate data
+- nca_power: added function to evaluate power
+- nca_output: remove OLS line from Plotly
+- nca_analysis: fix bug in bottlenecks for CE ceilings
+
 # NCA 3.3.3
-- 
+ 
 - nca_analysis: fix bug in method peers
 - nca_analysis: layout changes in tests
 - nca_analysis: test.p_threshold 0.05 as default   
@@ -52,7 +59,7 @@
 # NCA 3.1.0
 
 - Introduce corner argument
-- Augement the 'steps' argument on analysis: allow list of values
+- Augment the 'steps' argument on analysis: allow list of values
 - Add # of cases when bottleneck == 'percentile'
 - Add Plotly graph
 - Various bugfixes
