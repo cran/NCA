@@ -1,9 +1,9 @@
-1d990edf654c58f539c29b143b620517 *DESCRIPTION
+5cb166b76e9e40ccd3fab7e97d73f884 *DESCRIPTION
 9170b3c42e7d835952da15491a7f63e2 *NAMESPACE
-b7f35171efa55c69d0f6e81abd7ed5c6 *NEWS.md
+e1ca76ba163219352dcf5d31403932b4 *NEWS.md
 bd1752e0b64db45d7ee9c9d7e8620176 *R/nca.R
 5f408d9f4d7903f470e9a5a4221d2a66 *R/nca_bottleneck.R
-5305d69b4fa402e9dc18855d88783051 *R/nca_outliers.R
+94246c919f223e8aed213067b6bca36d *R/nca_outliers.R
 dc7664fe589a1a93e315f16a273c0817 *R/nca_output.R
 6b2539983eb86ab415b7defe3bd7e8dc *R/nca_plotly.R
 96d6fde89c77e30ae12dd32f631b16da *R/nca_plots.R
@@ -44,11 +44,11 @@ b7d3cb83d2cf4c7a06e831596bfbe9ca *R/p_peers.R
 e780f87874e73fdfb56d6e550108b391 *R/p_scope.R
 c7d3f92c20c7b291585371cca5e64bcf *R/p_utils.R
 bc3b1caec432981c120ab05bb39783c2 *R/p_validate.R
-fc5a5df0543f091fd6e93641595c8d60 *build/partial.rdb
+861a02f9623af44c4a71541930d3f147 *build/partial.rdb
 f3e66c43f793cb1888eca41ca3771858 *data/datalist
 7d496797b645e219cdf16252413c4dd0 *data/nca.example.RData
 e21947425449c54e4f93df892466663c *data/nca.example2.RData
-3d74b14a255eabbe445768321d3f63fd *man/NCA-package.Rd
+fc9d0cb25c61bc39b44e96ca10c4b48f *man/NCA-package.Rd
 3e88d7cea552f5d65882affacb5227bb *man/ceilings.Rd
 8069ba7fc0b686a7f07f85f08ac8d85b *man/line.colors.Rd
 8a7a03db41bcc68fb0b49ba5b79b0a6f *man/line.types.Rd

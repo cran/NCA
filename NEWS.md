@@ -1,3 +1,7 @@
+# NCA 4.0.1
+
+- nca_outliers: fix bug due to removed model$peers
+
 # NCA 4.0.0
 
 - nca_random: added function to generate data

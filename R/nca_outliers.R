@@ -27,7 +27,7 @@ nca_outliers <- function (data, x, y, ceiling = NULL,
   params <- list(model = model, x = x, y = y, ceiling = ceiling,
                  corner = corner, flip.x = flip.x, flip.y = flip.y,
                  scope = scope, eff.or = eff.or, global = global,
-                 min.dif = min.dif, peers = model$peers[[1]])
+                 min.dif = min.dif, peers = p_aggregate_peers(model$peers, 1))
 
   org_outliers <- p_get_outliers(data, params, 1)
   if (is.null(org_outliers)) {
@@ -178,15 +178,13 @@ p_get_combos <- function (data, params, k) {
     global <- model$summaries[[1]]$global
     all.names <- c(
       all.names,
-      p_get_all_names(data, model$peers[[1]], global, params, k)
+      p_get_all_names(data, p_aggregate_peers(model$peers, 1), global, params, k)
     )
 
     counter <- counter - 1
   }
 
-
   all.names <- unique(all.names)
-
   if (k == 1) {
     return (matrix(all.names, ncol = 1))
   }
