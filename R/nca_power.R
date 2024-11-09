@@ -1,6 +1,16 @@
 nca_power <- function (n = c(20, 50, 100), effect = 0.10, slope = 1, ceiling = "ce_fdh", p = 0.05,
                        distribution.x = "uniform", distribution.y = "uniform",
                        rep = 100, test.rep = 200) {
+
+  if (effect <= 0 || effect >= 1) {
+    message("The effect size needs to be larger than 0 and smaller than 1\n")
+    return()
+  }
+  else if (slope <= 0) {
+    message("The slope needs to be larger than 0\n")
+    return()
+  }
+
   # Calculate the total number of iterations
   n_iterations <- (rep *
     length(distribution.x) *
@@ -21,7 +31,7 @@ nca_power <- function (n = c(20, 50, 100), effect = 0.10, slope = 1, ceiling = "
       for (ceil in ceiling) {
         for (sample_size in n) {
           for (effect_size in effect) {
-            intercept <- 1 - sqrt(2 * effect_size)
+            intercept <- p_intercept(slope, effect)
 
             # Initialize vectors to store p-values and power results
             pval <- numeric(rep)
@@ -58,4 +68,29 @@ nca_power <- function (n = c(20, 50, 100), effect = 0.10, slope = 1, ceiling = "
   cat("\n\n")
 
   return(results)
+}
+
+p_intercept <- function (slope, effect) {
+  # Assume intercept >= 0, line through roof, y on x == 0 should be >= 1
+  intercept <- 1 - sqrt(2 * effect * slope)
+  if (intercept >= 0 && (intercept + slope) >= 1){
+    return(intercept)
+  }
+
+  # Assume intercept >= 0, line through right, y on x == 0 should be < 1
+  intercept <- 1 - effect - slope / 2
+  if (intercept >= 0 && (intercept + slope) < 1){
+    return (intercept)
+  }
+
+  # Assume intercept < 0, line through roof, y on x == 0 should be >= 1
+  intercept <- 0.5 - effect * slope
+  if (intercept < 0 && (intercept + slope) >= 1){
+    return (intercept)
+  }
+
+  # Assume intercept < 0, line through side, y on x == 0 should be <> 1
+  y <- sqrt(2 * (1 - effect) * slope)
+  intercept <- y - slope
+  return (intercept)
 }

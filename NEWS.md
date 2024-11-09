@@ -1,3 +1,7 @@
+# NCA 4.0.2
+
+- nca_power: fix bug in intercept calculation
+
 # NCA 4.0.1
 
 - nca_outliers: fix bug due to removed model$peers
