@@ -78,8 +78,8 @@ p_errors <- list(
   n = "n should be an integer > 1!",
   combination = "The combination of slope and intercept does not provide points in the [(0, 0), (1, 1)] area!",
   length = "The length of the slopes and intercepts should be equal!",
-  corner_23 = "Upward slope can not provide empty corners 2 (upper right) or 3 (bottom left)!",
-  corner_14 = "Downward slope can not provide empty corners 1 (upper left) or 4 (bottom right)!",
+  corner_23 = "Upward slope can not provide empty corners 2 (upper right) or 3 (lower left)!",
+  corner_14 = "Downward slope can not provide empty corners 1 (upper left) or 4 (lower right)!",
   distribution = "The distribution types need to be 'uniform' or 'normal'!"
 )
 

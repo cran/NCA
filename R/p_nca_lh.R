@@ -2,7 +2,7 @@ p_nca_lh <-
 function (loop.data, bn.data) {
   peers <- p_peers(loop.data)
 
-  if (!is.vector(peers) && length(peers) > 2) {
+  if (nrow(unique(peers)) > 1) {
     # Get coordinates for first and last peer
     x1 <- head(peers, n=1)[1]
     x2 <- tail(peers, n=1)[1]
@@ -23,14 +23,15 @@ function (loop.data, bn.data) {
     ceiling   <- 0
     effect    <- 0
     ineffs    <- list(x=NA, y=NA, abs=NA, rel=NA)
-    above     <- NA    
+    above     <- NA
+    peers     <- matrix(, nrow = 0, ncol = 2)
   }
 
   accuracy    <- p_accuracy(loop.data, above)
   fit         <- get_fit(ceiling, loop.data$ce_fdh_ceiling)
   bottleneck  <- p_bottleneck(loop.data, bn.data, slope, intercept)
 
-  return(list(line=line,
+  return(list(line=line, peers=peers,
               slope=slope, intercept=intercept,
               ceiling=ceiling, effect=effect,
               above=above, accuracy=accuracy, fit=fit,

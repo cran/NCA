@@ -79,12 +79,12 @@ function (x, corner) {
     stop("All corners must be an integer between 1 and 4 !\n", call.=F)
   }
 
-  # Check if corners are all on top or all on bottom
+  # Check if corners are all upper or all lower
   if (!all(corner %in% c(1, 2)) && !all(corner %in% c(3, 4))) {
     message()
-    stop("All corners need to be in the top half (1 and 2) \n       ",
-         "or the bottom half (3 and 4).\n       ",
-         "You can not mix top and bottom !\n", call.=F)
+    stop("All corners need to be in the upper half (1 and 2) \n       ",
+         "or the lower half (3 and 4).\n       ",
+         "You can not mix upper and lower !\n", call.=F)
   }
 
   return (corner)

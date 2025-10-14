@@ -1,3 +1,10 @@
+# NCA 4.0.3
+
+- nca_plotly: use workaround for single-point bug in Plotly
+- nca_power: vectorize slope and effect
+- nca_analysis: fix bug in model$peers
+- nca_analysis: allow duplicate peers
+
 # NCA 4.0.2
 
 - nca_power: fix bug in intercept calculation

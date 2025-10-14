@@ -20,14 +20,15 @@ function (plot, peers, labels, name = 'peer', coord.list = NULL) {
 
   # Add peers as separate trace first
   if (!is.null(peers)) {
-    peer_names <- rownames(peers)
-    if (ncol(peers) > 2) {
-      peer_names <- peers[, 3]
-    }
-    fig <- add_trace(fig, x = peers[, 1], y = peers[, 2],
-                     text = peer_names, type = 'scatter', mode = 'markers',
+    # https://github.com/plotly/plotly.R/issues/1859
+    df <- data.frame(x = peers[, 1], y = peers[, 2])
+    df$text <- rownames(peers)
+    df$text <- apply(df, 1, function (r) { sprintf("<b>%s</b><br>%s, %s", r[3], r[1], r[2]) } )
+
+    fig <- add_trace(fig, data = df, x = ~x, y = ~y,
+                     type = 'scatter', mode = 'markers',
                      marker = list(color = 'red', size = 10),
-                     hovertemplate = '<b>%{text}</b><br>%{x}, %{y}',
+                     hovertemplate = ~text,
                      showlegend = TRUE, name = name)
   }
 

@@ -2,8 +2,8 @@ p_nca_c_lp <-
 function (loop.data, bn.data) {
   peers <- p_peers(loop.data)
 
-  if (!is.vector(peers) && length(peers) > 2) {
-    K <- length(peers[,1])
+  if (nrow(unique(peers)) > 1) {
+    K <- nrow(unique(peers))
     factor <- ifelse(sum(loop.data$flip.x, loop.data$flip.y) == 1, -1, 1)
     f.obj <- c(K, -K, factor * sum(peers[,1]))
     f.con <- cbind(rep(1, K), rep(-1, K), factor * peers[,1])
@@ -18,12 +18,15 @@ function (loop.data, bn.data) {
     line      <- c(intercept, slope)
     ceiling   <- p_ceiling(loop.data, slope, intercept)
     above     <- 0
+    # Find the peers on the line
+    peers     <- p_best_peers(peers, intercept, slope)
   } else {
     line      <- NULL
     slope     <- NA
     intercept <- NA
     ceiling   <- 0
     above     <- NA
+    peers     <- matrix(, nrow = 0, ncol = 2)
   }
 
   effect      <- ceiling / loop.data$scope.area
@@ -32,7 +35,7 @@ function (loop.data, bn.data) {
   ineffs      <- p_ineffs(loop.data, slope, intercept)
   bottleneck  <- p_bottleneck(loop.data, bn.data, slope, intercept)
 
-  return(list(line=line,
+  return(list(line=line, peers=peers,
               slope=slope, intercept=intercept,
               ceiling=ceiling, effect=effect,
               above=above, accuracy=accuracy, fit=fit,

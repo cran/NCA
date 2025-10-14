@@ -62,7 +62,7 @@ p_warn_percentage_max <-
   function (loop.data, bn.data) {
     if (p_bottleneck_id(bn.data$bn.y) == 2 && loop.data$scope.theo[3] < 0) {
       warning(paste0("Using bottleneck.y with Y values < 0",
-                     ", results might be counterintuitive!"), call.=F)
+                     ", results might be counterintuitive!"), call. = F)
     }
   }
 
@@ -70,6 +70,13 @@ p_if_min_else_max <-
   function (use.min, ..., na.rm = FALSE) {
     dots <- c(...)
     return(ifelse(use.min, min(dots, na.rm = na.rm), max(dots, na.rm = na.rm)))
+  }
+
+p_is_equal <-
+  function (value_1, value_2) {
+    max.diff <- min(abs(value_1), abs(value_2)) / 1E6
+    diff <- abs(value_1 - value_2)
+    return(diff <= max.diff)
   }
 
 p_weights <-
@@ -161,7 +168,7 @@ p_start_cluster <-
 p_cluster_cleanup <-
   function () {
     env <- utils::getFromNamespace(".foreachGlobals", "foreach")
-    if (!identical(ls(name=env), character(0))) {
-      rm(list=ls(name=env), pos=env)
+    if (!identical(ls(name = env), character(0))) {
+      rm(list = ls(name = env), pos = env)
     }
   }

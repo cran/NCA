@@ -114,13 +114,13 @@ function (bn, method, title) {
 
   # Display header
   fmt <- sprintf(" %%-%ds", max(nchar(names)))
-  cat("\n", strrep('-', 80), "\n", sep = "")
+  cat("\n", strrep('-', dash.count), "\n", sep = "")
   message(title, " ", method, " (cutoff = ", cutoff, ")")
   message("Y", sprintf(fmt, names[1]), " (", bn.y, ")")
   for (i in seq(x.length)) {
     message(i, sprintf(fmt, names[i+1]), " (", bn.x ,")")
   }
-  cat(strrep('-', 80), "\n", sep = "")
+  cat(strrep('-', dash.count), "\n", sep = "")
 
   # Display table, insert the 'Y' for the first column
   cat("Y")

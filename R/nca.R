@@ -88,7 +88,6 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
     analisys_ce_fdh <- p_nca_wrapper("ce_fdh", loop.data, bn.data, effect_aggregation)
     loop.data$ce_fdh_ceiling <- analisys_ce_fdh$ceiling
     loop.data$ce_fdh_peers <- analisys_ce_fdh$peers
-    analisys_ce_fdh$peers <- NULL
 
     # We need to make sure ce_cm_conf (if present) comes before cr_cm_conf
     if ("ce_cm_conf" %in% ceilings) {
@@ -110,6 +109,7 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
       }
       analysis$bottleneck <- NULL
       analyses[[ceiling]] <- analysis
+      peers[[ceiling]][[x.name]] <- analysis$peers
     }
 
     test_tuple <- p_test(analyses, loop.data, test.params, effect_aggregation)
@@ -131,7 +131,6 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
     }
     plots[[x.name]] <- p_plot(analyses, loop.data, corner)
     summaries[[x.name]] <- p_summary(analyses, loop.data)
-    peers[[x.name]] <- p_peers(loop.data)
   }
 
   # Shut down cluster for parallisation
@@ -145,7 +144,7 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
   model <- list(plots=plots,
                 summaries=summaries,
                 bottlenecks=bottlenecks,
-                peers=p_method_peers(peers, plots, ceilings),
+                peers=peers,
                 tests=tests,
                 test.time=p_test_time(test.time))
   class(model) <- "nca_result"

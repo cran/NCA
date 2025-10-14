@@ -6,7 +6,7 @@ function (loop.data, bn.data) {
   # Find the points on the ceiling ("PEERS")
   peers <- p_peers(loop.data)
 
-  if (!is.vector(peers) && length(peers) > 2) {
+  if (nrow(unique(peers)) > 1) {
     # Perform OLS through the peers
     x <- peers[,1]
     y <- peers[,2]
@@ -22,6 +22,7 @@ function (loop.data, bn.data) {
     intercept <- NA
     slope     <- NA
     above     <- 0
+    peers     <- matrix(, nrow = 0, ncol = 2)
   }
 
   effect      <- ceiling / loop.data$scope.area
@@ -30,7 +31,7 @@ function (loop.data, bn.data) {
   ineffs      <- p_ineffs(loop.data, slope, intercept)
   bottleneck  <- p_bottleneck(loop.data, bn.data, slope, intercept)
 
-  return(list(line=line,
+  return(list(line=line, peers=peers,
               slope=slope, intercept=intercept,
               ceiling=ceiling, effect=effect,
               above=above, accuracy=accuracy, fit=fit,

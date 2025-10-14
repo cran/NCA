@@ -26,7 +26,7 @@ function (loop.data, slope, intercept) {
 p_ineffs_ce <-
 function (loop.data, peers) {
   # if there is only one peer, the ceiling zone is zero
-  if (is.vector(peers) || length(peers) == 2) {
+  if (nrow(unique(peers)) == 1) {
     return( list(x=NA, y=NA, abs=NA, rel=NA) )
   }
 

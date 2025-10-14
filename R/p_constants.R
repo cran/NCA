@@ -38,5 +38,8 @@ line.width      <- 1.5
 point.type      <- 21
 point.color     <- "blue"
 
+dash.count      <- 75
+
 # Used to compare floats
 epsilon         <- 1e-10
+delta           <- 1E6

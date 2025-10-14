@@ -30,13 +30,13 @@ nca_outliers <- function (data, x, y, ceiling = NULL,
                  min.dif = min.dif, peers = p_aggregate_peers(model$peers, 1))
 
   org_outliers <- p_get_outliers(data, params, 1)
-  if (is.null(org_outliers)) {
+  if (k == 1 && is.null(org_outliers)) {
     message("\nNo outliers identified")
     return()
   }
   outliers <- p_format_outliers(org_outliers, max.results, 1, min.dif, condensed)
 
-  if (plotly) {
+  if (plotly && !is.null(outliers)) {
     points <- data[outliers[, 1], c(x, y)]
     labels <- paste0(rownames(points), '<br>diff ', outliers[, 5])
     marks <- paste0(outliers[, 6], outliers[, 7])
@@ -51,6 +51,10 @@ nca_outliers <- function (data, x, y, ceiling = NULL,
   }
 
   outliers <- p_get_outliers(data, params, k, org_outliers)
+  if (is.null(outliers) || nrow(outliers) == 0) {
+    message("\nNo outliers identified")
+    return()
+  }
   return(p_format_outliers(outliers, max.results, k, min.dif, condensed))
 }
 
@@ -121,11 +125,6 @@ p_get_outliers <- function (data, params, k, org_outliers = NULL) {
     outlier <- outliers[idx, ]
     old_combo <- outlier[8]
     tmp <- org_outliers
-
-    #max.dif.rel <- max(abs(unlist(tmp[tmp[, "combo"] %in% unlist(old_combo), 5])))
-    #if (abs(unlist(outlier[5])) != max.dif.rel) {
-    #   return()
-    #}
 
     f <- function (n) {
       dif.rel <- tmp[tmp[, "combo"] %in% n,]$dif.rel
@@ -249,7 +248,8 @@ p_get_values <- function (data.new, params) {
                             scope = params$scope)
   eff.nw <- model.new$summaries[[1]]$params[2]
   dif.abs <- ifelse(is.na(eff.nw), 0, eff.nw - params$eff.or)
-  dif.rel <- ifelse(params$eff.or < epsilon, 0, 100 * dif.abs / params$eff.or)
+  zero.dif.rel <- ifelse(dif.abs < epsilon, 0, Inf)
+  dif.rel <- ifelse(params$eff.or < epsilon, zero.dif.rel, 100 * dif.abs / params$eff.or)
   global.new <- model.new$summaries[[1]]$global
   return(list(eff.nw, dif.abs, dif.rel, global.new))
 }
@@ -284,7 +284,7 @@ p_get_names <- function (combo, k) {
 
 p_format_outliers <- function (outliers, max.results, k, min.dif, condensed) {
   # The dataset / param combination doesn't produce outliers
-  if (nrow(outliers) == 0) {
+  if (is.null(outliers) || nrow(outliers) == 0) {
     return()
   }
 
@@ -295,7 +295,7 @@ p_format_outliers <- function (outliers, max.results, k, min.dif, condensed) {
     len <- length(unlist(strsplit(outliers[row_idx, 1], ' - ', fixed=T)))
     outliers[row_idx, 9] <- len
   }
-  outliers <- outliers[order(-abs(outliers$dif.rel), outliers[, 9]),]
+  outliers <- outliers[order(-abs(outliers$dif.rel), -abs(outliers$dif.abs), outliers[, 9]),]
   org.length <- nrow(outliers)
 
   # If k == 1: all outliers are shown on Plotly

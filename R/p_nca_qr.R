@@ -27,7 +27,10 @@ function (loop.data, bn.data) {
   ineffs      <- p_ineffs(loop.data, slope, intercept)
   bottleneck  <- p_bottleneck(loop.data, bn.data, slope, intercept)
 
-  return(list(line=qr,
+  loop.data$flip.x <- loop.data$flip.y
+  peers       <- p_get_line_peers(loop.data, intercept, slope)
+
+  return(list(line=qr, peers=peers,
               slope=slope, intercept=intercept,
               ceiling=ceiling, effect=effect,
               above=above, accuracy=accuracy, fit=fit,

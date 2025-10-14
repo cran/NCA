@@ -1,4 +1,4 @@
-p_new_pdf <- 
+p_new_pdf <-
 function (name1, name2, path=NULL, paper="a4") {
   if (!is.null(path)) {
     name1 <- paste(path, name1, sep="/")
@@ -11,7 +11,7 @@ function (name1, name2, path=NULL, paper="a4") {
     pdf(file.name, paper=paper, width = 0, height = 0)
   } else {
     pdf(file.name, paper=paper)
-  } 
+  }
 }
 
 p_new_window <-

@@ -13,7 +13,7 @@ function (loop.data, bn.data) {
   bottleneck  <- p_bottleneck_ce(loop.data, bn.data, peers, "vrs")
   fit         <- get_fit(ceiling, loop.data$ce_fdh_ceiling)
 
-  return(list(line=line,
+  return(list(line=line, peers=peers,
               slope=NA, intercept=NA,
               ceiling=ceiling, effect=effect,
               above=0, accuracy=100, fit=fit,
