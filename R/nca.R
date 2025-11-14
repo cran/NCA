@@ -106,6 +106,7 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
       }
       if (!is.null(analysis$bottleneck) && !(ceiling %in% p_no_bottleneck)) {
         bn.data$bottlenecks[[ceiling]][x.name] <- analysis$bottleneck
+        attr(bn.data$bottlenecks[[ceiling]][x.name], 'cases') <- attr(analysis$bottleneck, 'cases')
       }
       analysis$bottleneck <- NULL
       analyses[[ceiling]] <- analysis

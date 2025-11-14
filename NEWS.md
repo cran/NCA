@@ -1,3 +1,8 @@
+# NCA 4.0.4
+
+- nca_analysis: fix bug in bottleneck cases
+- nca_analysis: calculate p-value according to https://doi.org/10.1086/341527
+
 # NCA 4.0.3
 
 - nca_plotly: use workaround for single-point bug in Plotly

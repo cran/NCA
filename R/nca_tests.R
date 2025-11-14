@@ -78,7 +78,9 @@ function (analyses, loop.data, test.params, effect_aggregation) {
 
     # Add threshold- and P-value for displaying in summary
     threshold.value <- as.numeric(quantile(sort(data), 1 - test.params$p_threshold))
-    p_value <- 1 - mean(data < observed)
+    # https://doi.org/10.1086/341527
+    tmp <- data >= observed
+    p_value <- (sum(tmp) + 1) / (length(tmp) + 1)
     p_value <- max(p_value, 1/test.params$rep)
 
     # Add MOE

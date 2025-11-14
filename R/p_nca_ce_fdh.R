@@ -22,8 +22,8 @@ function (loop.data, bn.data) {
 
 p_fdh_line <-
 function (scope, peers, flip.x, flip.y) {
-  x.points <- c()
-  y.points <- c()
+  x.points <- NULL
+  y.points <- NULL
 
   y.old <- scope[3 + flip.y]
   for (i in 1:nrow(peers)) {
