@@ -1,3 +1,7 @@
+# NCA 4.0.5
+
+- nca_analysis: fix bug in bottleneck cases
+
 # NCA 4.0.4
 
 - nca_analysis: fix bug in bottleneck cases

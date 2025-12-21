@@ -1,8 +1,8 @@
 Package: NCA
 Type: Package
 Title: Necessary Condition Analysis
-Version: 4.0.4
-Date: 2025-11-17
+Version: 4.0.5
+Date: 2025-12-22
 Authors@R: c(person(given = "Jan",
                     family = "Dul",
                     role = "aut",
@@ -23,8 +23,8 @@ Imports: gplots, quantreg, KernSmooth, lpSolve, ggplot2, doParallel,
 NeedsCompilation: no
 Repository: CRAN
 Suggests: testthat
-Packaged: 2025-11-14 13:14:06 UTC; govert
+Packaged: 2025-12-21 15:22:51 UTC; govert
 Author: Jan Dul [aut],
   Govert Buijs [cre]
 Maintainer: Govert Buijs <buijs@rsm.nl>
-Date/Publication: 2025-11-14 13:40:02 UTC
+Date/Publication: 2025-12-21 16:00:02 UTC

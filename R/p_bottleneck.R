@@ -28,7 +28,6 @@ p_bottleneck <-
     mpx <- p_transform_mpx(loop.data, mpx, bn.data$bn.x.id)
     pretty_mpx <- p_pretty_mpx(loop.data, mpx, nn.value, na.value, precision.x)
     attr(pretty_mpx, "mpx.actual") <- mpx.actual
-
     if (bn.data$bn.x.id == 4) {
       attr(pretty_mpx, "cases") <- cases
     }
@@ -63,7 +62,6 @@ p_bottleneck_ce <-
     mpx <- p_transform_mpx(loop.data, mpx, bn.data$bn.x.id)
     pretty_mpx <- p_pretty_mpx(loop.data, mpx, nn.value, na.value, precision.x)
     attr(pretty_mpx, "mpx.actual") <- mpx.actual
-
     if (bn.data$bn.x.id == 4) {
       attr(pretty_mpx, "cases") <- cases
     }
@@ -247,7 +245,8 @@ p_cases <-
     x <- loop.data$x
     flip.x <- loop.data$flip.x
     mpx.cases <- mpx + ifelse(flip.x, epsilon, -epsilon)
-    percentile <- ecdf(sort(x))
-    cases <- percentile(mpx.cases) * nrow(x)
+    factor <- ifelse(flip.x, -1, 1)
+    percentile <- ecdf(sort(factor * x))
+    cases <- percentile(factor * mpx.cases) * nrow(x)
     return(cases)
   }
