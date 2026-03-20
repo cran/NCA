@@ -3,21 +3,23 @@
 \title{display the result of the NCA analysis}
 \description{Show the plots, NCA summaries and bottleneck tables of a NCA analysis.}
 \usage{nca_output(model, plots=TRUE, plotly=FALSE, bottlenecks=FALSE,
-           summaries=TRUE, test=FALSE, pdf=FALSE, path=NULL, selection = NULL)}
+           summaries=TRUE, test=FALSE, pdf=FALSE, path=NULL, selection = NULL, 
+           plot_bottlenecks=0)}
 \arguments{
 \item{model}{Displays output of the nca or nca_analysis command}
-\item{plots}{If true (default) show the scatter plot(s), one  for each independent variable.\cr
+\item{plots}{If true (default) show the scatter plot(s), one  for each condition.\cr
 In Rstudio the plots are shown the Plots window.}
-\item{plotly}{If true shows the interactive scatter plot(s), one for each independent variable.\cr
+\item{plotly}{If true shows the interactive scatter plot(s), one for each condition.\cr
 In RStudio the plots are shown in the Viewer window. See Details.}
 \item{bottlenecks}{If true displays the bottleneck table(s) in the Console window, one table for each ceiling line}
-\item{summaries}{If true shows the summaries for each independent variable in the Console window, see Details}
+\item{summaries}{If true shows the summaries for each condition in the Console window, see Details}
 \item{test}{If true shows the result of the statistical sigificance test (if present), see Details}
 \item{pdf}{If true exports the output to a pdf file, except for the plotly plot}
 \item{path}{Optional path for the output file(s)}
-\item{selection}{Optionally selects the independent variables for inclusion in the output.\cr
-For example, only the plots for the selected independent variable are shown.\cr
-In the bottleneck table the required levels of only the selected independent variables for given levels of Y are shown.}
+\item{selection}{Optionally selects the conditions for inclusion in the output.\cr
+For example, only the plots for the selected condition are shown.\cr
+In the bottleneck table the required levels of only the selected conditions for given levels of Y are shown.}
+\item{plot_bottlenecks}{Optionally show the bottleneck lines}
 }
 \details{
 \strong{Plotly}\cr
@@ -35,7 +37,7 @@ The 11 printed NCA parameters are:\cr
 - \emph{Ceiling zone}, which is the size of the "empty" area in the upper-left corner\cr
 - \emph{Effect size}, which is the ceiling zone divided by the scope\cr
 - \emph{# above}, which is the number of observations that are above the ceiling line and hence in the "empty" ceiling zone\cr
-- \emph{c-accuracy}, which is the number of observations on or below the ceiling line divided by the total number of observations and multiplied by 100 percent\cr
+- \emph{Ceiling accuracy}, which is the number of observations on or below the ceiling line divided by the total number of observations and multiplied by 100 percent\cr
 - \emph{Fit}, which relates to the "closeness" of the selected ceiling line to the ce_fdh ceiling line\cr
 - \emph{Slope} and \emph{Intercept}, which are the slope and the intercept of the straight ceiling line (no values are printed if the ceiling line is not a straight line, but a step function)\cr
 - \emph{Abs. ineff.}, which is the total xy-space where x does not constrain y, and y is not constrained by x\cr
@@ -47,7 +49,7 @@ The 11 printed NCA parameters are:\cr
 \bold{Test}\cr
 NCA's statistical test is a randomness test to evaluate if the observed effect size may be a random result of unrelated X and Y variables
 }
-\examples{
+\examples{\dontshow{Sys.setenv(NCA_SKIP_PURITY=TRUE)}
 # Use the result of the nca command:
 data(nca.example)
 data <- nca.example
@@ -80,7 +82,7 @@ nca_output(model, test=TRUE)
 # Show all five
 \donttest{nca_output(model, plots=TRUE, plotly=TRUE, bottlenecks=TRUE, test=TRUE)}
 
-# Per independent variable, export plots and summaries to PDF files,
+# Per condition, export plots and summaries to PDF files,
 # and export all the bottleneck tables to a single PDF file
 \donttest{nca_output(model, plots=TRUE, bottlenecks=TRUE, pdf=TRUE)}
 \dontshow{file.remove(dir(path=".", pattern = "*.pdf"))}
@@ -88,11 +90,14 @@ nca_output(model, test=TRUE)
 outdir <- '/tmp' \dontshow{outdir <- tempdir()}
 nca_output(model, plots=TRUE, pdf=TRUE, path=outdir)
 
-# Limit the output to a selection of independent variables by name
+# Limit the output to a selection of conditions by name
 nca_output(model, plots=TRUE, selection=c("Individualism"))
 
 # Or by column index, in both cases the order matters
 nca_output(model, plots=TRUE, selection=c(2, 1))
+
+# Show the bottleneck lines in the plots or plotly
+# 1 shows the outcome lines, 2 also shows the lines for the condition
+nca_output(model, plots = TRUE, bottlenecks = TRUE, summaries = FALSE, plot_bottlenecks = 1)
 }
 \keyword{functions}
-

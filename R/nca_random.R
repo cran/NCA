@@ -16,7 +16,7 @@ nca_random <- function (n, intercepts, slopes, corner = 1,
     data[['X']] <- NA
   }
   else {
-    for (i in 1:length(slopes)) {
+    for (i in seq_along(slopes)) {
       data[[paste0('X', i)]] <- NA
     }
   }
@@ -29,7 +29,7 @@ nca_random <- function (n, intercepts, slopes, corner = 1,
       data[idx, length(slopes) + 1] <- y.value
 
       all.good <- TRUE
-      for (x.idx in 1:length(slopes)) {
+      for (x.idx in seq_along(slopes)) {
         x.value <- p_value(distribution.x, mean.x, sd.x)
         data[idx, x.idx] <- x.value
 
@@ -101,7 +101,7 @@ p_validate_inputs <- function (n, intercepts, slopes, corner, distribution.x, di
     return(list(error = 'length', intercepts = intercepts, slopes = slopes))
   }
 
-  for (idx in 1:length(slopes)) {
+  for (idx in seq_along(slopes)) {
     slope <- slopes[idx]
     intercept <- intercepts[idx]
     cond.1 <- slope > 0 && (intercept >= 1 || (intercept + slope) <= 0)

@@ -11,7 +11,7 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh")) {
 }
 
 nca_analysis <-
-function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
+function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"), custom=NULL,
           corner=NULL, flip.x=FALSE, flip.y=FALSE, scope=NULL,
           bottleneck.x='percentage.range', bottleneck.y='percentage.range',
           steps=10, step.size=NULL, cutoff=0, qr.tau=0.95, effect_aggregation=1,
@@ -25,7 +25,11 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
   data.x <- cleaned$x
   data.y <- cleaned$y
 
-  # Validate ceiling types
+  # Validate ceiling types and custom if applicable
+  custom <- p_validate_custom(custom, data.x)
+  if (!is.null(custom)) {
+    ceilings <- c(ceilings, p_ceiling_custom)
+  }
   ceilings <- p_validate_ceilings(ceilings)
 
   # Overrule flip.x and flip.y if corners is defined
@@ -45,11 +49,7 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
   scope <- p_scope(x, scope)
 
   # Validate effect size aggregation
-  effect_aggregation <- intersect(c(2, 3, 4), effect_aggregation)
-  if (length(effect_aggregation) > 0) {
-    total <- paste(c(1, effect_aggregation), collapse = ', ')
-    warning(paste("Using corners", total, "for effect_aggregation"), call.=FALSE)
-  }
+  effect_aggregation <- p_validate_effect_aggregation(effect_aggregation)
 
   # Data object for bottlenecks
   bn.data <- p_bottleneck_data(data.x, data.y, scope, flip.y, ceilings,
@@ -68,8 +68,8 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
                       p_threshold=test.p_threshold)
 
   # Create cluster for parallisation if needed
-  condition <- length(ceilings) * length(data.x) * test.rep > 6000
-  p_start_cluster(detectCores() > 1 && condition)
+  p_start_cluster(p_dopar_condition(
+    length(ceilings) * length(data.x) * test.rep > 6000, min.cores=1))
 
   # Create output lists
   plots <- list()
@@ -78,29 +78,21 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
   peers <- list()
   test.time <- 0
 
-  # Loop the independent varaibles
-  for (id.x in 1:length(data.x)) {
-    loop.data <- p_create_loop_data(data.x, data.y, scope, flip.x, flip.y, id.x, qr.tau)
+  # Loop the independent variables
+  for (id.x in seq_along(data.x)) {
+    loop.data <- p_create_loop_data(data.x, data.y, scope, flip.x, flip.y, id.x, qr.tau, custom)
     p_warn_percentage_max(loop.data, bn.data)
     x.name <- loop.data$names[id.x]
 
     # We need this for the 'FIT' number, regardless of user preference
-    analisys_ce_fdh <- p_nca_wrapper("ce_fdh", loop.data, bn.data, effect_aggregation)
-    loop.data$ce_fdh_ceiling <- analisys_ce_fdh$ceiling
-    loop.data$ce_fdh_peers <- analisys_ce_fdh$peers
-
-    # We need to make sure ce_cm_conf (if present) comes before cr_cm_conf
-    if ("ce_cm_conf" %in% ceilings) {
-      analisys_ce_cm_conf <- p_nca_wrapper("ce_cm_conf", loop.data, bn.data, effect_aggregation)
-      loop.data$ce_cm_conf_columns <- attr(analisys_ce_cm_conf$line, "columns")
-    }
+    analysis_ce_fdh <- p_nca_wrapper("ce_fdh", loop.data, bn.data, effect_aggregation)
+    loop.data$ce_fdh_ceiling <- analysis_ce_fdh$ceiling
+    loop.data$ce_fdh_peers <- analysis_ce_fdh$peers
 
     analyses <- list()
     for (ceiling in ceilings) {
       if (ceiling == "ce_fdh") {
-        analysis <- analisys_ce_fdh
-      } else if (ceiling == "ce_cm_conf") {
-        analysis <- analisys_ce_cm_conf
+        analysis <- analysis_ce_fdh
       } else {
         analysis <- p_nca_wrapper(ceiling, loop.data, bn.data, effect_aggregation)
       }
@@ -135,7 +127,7 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
   }
 
   # Shut down cluster for parallisation
-  stopImplicitCluster()
+  p_stop_cluster()
 
   # Add the bottlenecks with mpy attribute
   bottlenecks <- bn.data$bottlenecks
@@ -148,6 +140,9 @@ function (data, x, y, ceilings=c("ols", "ce_fdh", "cr_fdh"),
                 peers=peers,
                 tests=tests,
                 test.time=p_test_time(test.time))
+
+  model <- p_add_extracts(model)
+
   class(model) <- "nca_result"
   attr(model, "show.plots") <- FALSE
 

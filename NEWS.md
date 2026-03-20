@@ -1,3 +1,27 @@
+# NCA 5.0.0
+
+- documentation: change independent and dependent variable to condition and outcome
+- nca_difference: added
+- nca_analysis: added purity metrics for some ceilings (ce_fdh, ce_vrs, cr_fdh, c_lp)
+- nca_normalize: renamed to nca_util_normalize
+- nca_output: move plot to ggplot2
+- nca_outliers: do not show 'scope' column when a theoretical scope is defined
+- nca_analysis: do not ignore set.seed() when doing nca_analysis with tests
+- nca_power: remove average p from output
+- nca_power: add corner argument
+- nca_power: add parallelization for larger iteration sets
+- nca_powerplot: added
+- parallelization: add 'max.cores' environment variable
+- nca_tests: replace qplot with ggplot (deprecation)
+- nca_output: add date/time to PDF filenames
+- nca_extract: added
+- nca_analysis: add custom ceiling
+- nca_normalize: added
+- nca_output: added plot_bottlenecks for bottleneck lines in plots and plotly
+- nca_output: collapse observations in plotly
+- nca_output: extend lines to Ymin and Xmax (for corner 1, other corners comparable)
+
+
 # NCA 4.0.5
 
 - nca_analysis: fix bug in bottleneck cases
@@ -30,10 +54,10 @@
 - nca_analysis: fix bug in bottlenecks for CE ceilings
 
 # NCA 3.3.3
- 
+
 - nca_analysis: fix bug in method peers
 - nca_analysis: layout changes in tests
-- nca_analysis: test.p_threshold 0.05 as default   
+- nca_analysis: test.p_threshold 0.05 as default
 
 # NCA 3.3.2
 

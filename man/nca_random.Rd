@@ -23,10 +23,10 @@ The latter is a truncated normal distribution.}
 # Generate a uniform dataset, default for X and Y
 data <- nca_random(100, 0, 1)
 
-# It is also possible to generate a dataset with multiple independent variables,
+# It is also possible to generate a dataset with multiple conditions,
 # by supplying vectors for the intercepts and slopes
 data <- nca_random(100, c(0, 0.25), c(1, 0.75))
-# Single values will be repeated to complement a vector  
+# Single values will be repeated to complement a vector
 data <- nca_random(100, c(0, 0.25), 1)
 
 # The default is an empty space in the upper left corner.

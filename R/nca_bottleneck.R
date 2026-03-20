@@ -26,15 +26,30 @@ p_display_table_pdf <-
     bn.y.id <- attr(bn, "bn.y.id")
     rows <- nrow(bn)
     x.length <- ncol(bn) - 1
+    size <- attr(bn, "size")
     cutoff <- attr(bn, "cutoff")
 
-    table_matrix <- p_get_table(bn, bn.x)
-    if (length(table_matrix) == 0) {
+    # TODO Weird bug : can't replace colnames in bn
+    tmp <- matrix(nrow = rows, ncol = x.length)
+    for (i in 1:x.length) {
+      if (bn.x == 'percentile') {
+        suppressWarnings(cases <- round(size * as.numeric(bn[, i + 1]) / 100, digits = 0))
+        cases <- ifelse(bn[, i + 1] == "NN", 0, cases)
+        tmp[, i] <- paste0(bn[, i + 1], ' (', as.character(cases), ')')
+      } else {
+        tmp[, i] <- bn[, i + 1]
+      }
+    }
+    if (length(tmp) == 0) {
       return()
     }
 
-    # Set y precision, names
-    digits <- p_digits(bn, bn.y.id)
+    # Set y precision
+    if (bn.y.id %in% c(1, 2)) {
+      digits <- ifelse((100 / (rows - 1)) %% 1 == 0, 0, 1)
+    } else {
+      digits <- p_get_digits(bn[, 1])
+    }
     col.names <- as.character(1:x.length)
     row.names <- sapply(bn[, 1], p_pretty_number, "", digits)
 
@@ -50,12 +65,12 @@ p_display_table_pdf <-
     while (start < (rows)) {
       end <- min(start + 30, rows)
 
-      part <- matrix(table_matrix[start:end,], ncol = x.length)
-      colnames(part) <- col.names
-      rownames(part) <- row.names[start:end]
+      tmp.part <- matrix(tmp[start:end,], ncol = x.length)
+      colnames(tmp.part) <- col.names
+      rownames(tmp.part) <- row.names[start:end]
 
       # A new window for each part
-      textplot(part, cex = 1, halign = "left", valign = "top", mar = c(0, 0, 3, 0))
+      textplot(tmp.part, cex = 1, halign = "left", valign = "top", mar = c(0, 0, 3, 0))
       title(title, cex.main = 1, sub = legend)
 
       start <- end
@@ -70,17 +85,32 @@ p_display_table_screen <-
     bn.y.id <- attr(bn, "bn.y.id")
     rows <- nrow(bn)
     x.length <- ncol(bn) - 1
+    size <- attr(bn, "size")
     cutoff <- attr(bn, "cutoff")
 
-    table_matrix <- p_get_table(bn, bn.x)
-    if (length(table_matrix) == 0) {
+    # TODO Weird bug : can't replace colnames in bn
+    tmp <- matrix(nrow = rows, ncol = x.length)
+    for (i in 1:x.length) {
+      values <- bn[, i + 1]
+      if (bn.x == 'percentile') {
+        cases <- attr(values, "cases")
+        tmp[, i] <- paste0(values, ' (', as.character(cases), ')')
+      } else {
+        tmp[, i] <- values
+      }
+    }
+    if (length(tmp) == 0) {
       return()
     }
 
-    # Set y precision, names
-    digits <- p_digits(bn, bn.y.id)
-    colnames(table_matrix) <- as.character(1:x.length)
-    rownames(table_matrix) <- sapply(bn[, 1], p_pretty_number, "", digits, TRUE)
+    # Set y precision
+    if (bn.y.id %in% c(1, 2)) {
+      digits <- ifelse((100 / (rows - 1)) %% 1 == 0, 0, 1)
+    } else {
+      digits <- p_get_digits(bn[, 1])
+    }
+    colnames(tmp) <- as.character(1:x.length)
+    rownames(tmp) <- sapply(bn[, 1], p_pretty_number, "", digits, TRUE)
 
     # Display header
     fmt <- sprintf(" %%-%ds", max(nchar(names)))
@@ -94,35 +124,78 @@ p_display_table_screen <-
 
     # Display table, insert the 'Y' for the first column
     cat("Y")
-    print(table_matrix, quote = FALSE)
+    print(tmp, quote = FALSE)
     message()
   }
 
-p_digits <-
-  function (bn, bn.y.id) {
-    if (bn.y.id %in% c(1, 2)) {
-      return(ifelse((100 / (nrow(bn) - 1)) %% 1 == 0, 0, 1))
-    } else {
-      return(p_get_digits(bn[, 1]))
-    }
-  }
-
-p_get_table <-
-  function (bn, bn.x) {
+p_display_table_screen_tab <-
+  function (bn, method, title) {
+    names <- colnames(bn)
+    bn.x <- attr(bn, "bn.x")
+    bn.y <- attr(bn, "bn.y")
+    bn.y.id <- attr(bn, "bn.y.id")
     rows <- nrow(bn)
     x.length <- ncol(bn) - 1
+    size <- attr(bn, "size")
+    cutoff <- attr(bn, "cutoff")
 
     # TODO Weird bug : can't replace colnames in bn
-    table_matrix <- matrix(nrow = rows, ncol = x.length)
+    tmp <- matrix(nrow = rows, ncol = x.length)
     for (i in 1:x.length) {
-      values <- bn[, i + 1]
       if (bn.x == 'percentile') {
-        cases <- attr(values, "cases")
-        table_matrix[, i] <- paste0(values, ' (', as.character(cases), ')')
+        suppressWarnings(
+          cases <- round(size * as.numeric(bn[, i + 1]) / 100, digits = 0)
+        )
+        tmp[, i] <- paste0(bn[, i + 1], ' (', as.character(cases), ')')
       } else {
-        table_matrix[, i] <- values
+        tmp[, i] <- bn[, i + 1]
       }
     }
+    if (length(tmp) == 0) {
+      return()
+    }
 
-    return(table_matrix)
+    # Set y precision
+    if (bn.y.id %in% c(1, 2)) {
+      digits <- ifelse((100 / (rows - 1)) %% 1 == 0, 0, 1)
+    } else {
+      digits <- p_get_digits(bn[, 1])
+    }
+    colnames(tmp) <- as.character(1:x.length)
+    rownames(tmp) <- sapply(bn[, 1], p_pretty_number, "", digits, TRUE)
+
+    # Display header
+    tab <- 8
+    tabs <- ceiling((3 + max(nchar(names))) / tab)
+    offset <- floor(log10(x.length)) + 2
+    fmt <- sprintf("%%%ds ", offset - 1)
+    cat("\n----------------------------------------")
+    cat("----------------------------------------\n")
+    message(title, " ", method, " (cutoff = ", cutoff, ")")
+    needed <- tabs - floor((offset + nchar(names[1])) / tab)
+    message(sprintf(fmt, "Y"), names[1], strrep("\t", needed), "(", bn.y, ")")
+    for (i in seq(x.length)) {
+      needed <- tabs - floor((offset + nchar(names[i + 1])) / tab)
+      message(sprintf(fmt, i), names[i + 1], strrep("\t", needed), "(", bn.x, ")")
+    }
+    cat("----------------------------------------")
+    cat("----------------------------------------\n")
+
+    # Display table
+    tabs <- ceiling(max(nchar(tmp)) / tab)
+    first <- ceiling(max(nchar(colnames(tmp))) / tab)
+    output <- c("Y", strrep("\t", first))
+    output <- c(output, paste0(colnames(tmp), strrep("\t", tabs)), "\n")
+    for (idx.row in seq_len(nrow(tmp))) {
+      needed <- first - floor(nchar(rownames(tmp)[idx.row]) / tab)
+      output <- c(output, rownames(tmp)[idx.row], strrep("\t", needed))
+      for (idx.col in seq_len(ncol(tmp))) {
+        needed <- tabs - floor(nchar(tmp[idx.row, idx.col]) / tab)
+        output <- c(output, tmp[idx.row, idx.col], strrep("\t", needed))
+      }
+      output <- c(output, "\n")
+    }
+    message(paste(output, collapse = ''))
+
+    message()
   }

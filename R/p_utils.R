@@ -58,6 +58,31 @@ p_pretty_number <-
     return(sprintf(fmt, uglyNumber, paste(rep(" ", nSpaces), collapse = '')))
   }
 
+p_nof <-
+  function (number) {
+    if (!p_is_number(number)) {
+      return("")
+    }
+    return(sprintf("(%d)", number))
+  }
+
+p_get_precision <-
+  function (x) {
+    if (!is.finite(x)) {
+      return(NA)
+    }
+    x <- as.character(x)
+    if (!grepl(".", x, fixed = TRUE)) {
+      return(0)
+    }
+    frac <- strsplit(x, ".", fixed = TRUE)[[1]][2]
+    if (is.na(frac) || nchar(frac) == 0) {
+      return(0)
+    }
+    digits <- strsplit(frac, "", fixed = TRUE)[[1]]
+    max(which(digits != "0"))
+  }
+
 p_warn_percentage_max <-
   function (loop.data, bn.data) {
     if (p_bottleneck_id(bn.data$bn.y) == 2 && loop.data$scope.theo[3] < 0) {
@@ -100,75 +125,79 @@ p_weights <-
     return(weights)
   }
 
-print.nca_result <-
-  function (x, ...) {
-    p_display_summary_simple(x$summaries)
-    if (attr(x, "show.plots")) {
-      for (plot in x$plots) {
-        p_display_plot(plot)
-      }
-    }
-  }
-
-summary.nca_result <-
-  function (object, columns = NULL, ...) {
-    if (!is.null(columns)) {
-      # Columns can be indexes or names
-      if (!is.numeric(columns)) {
-        columns <- match(c(columns), names(object$summaries))
-        columns <- columns[!is.na(columns)]
-      }
-      else {
-        columns <- columns[columns > 0]
-        columns <- columns[columns < length(object$summaries)]
-      }
-
-      # Make sure user actually selected columns
-      tmp <- object$summaries[columns]
-      if (length(tmp) > 0) {
-        object$summaries <- tmp
-      }
-    }
-
-    nca_output(object)
-  }
-
-plot.nca_result <-
-  function (x, ...) {
-    nca_output(x, plots = TRUE, summaries = FALSE, bottlenecks = FALSE)
-  }
-
 p_get_digits <-
   function (tmp) {
     get_max_nchar <- function (n) { nchar(sub("0+$", "", sprintf("%f", n %% 1))) }
     return(min(3, max(sapply(tmp, get_max_nchar) - 2)))
   }
 
-p_accuracy <-
-  function (loop.data, above) {
-    nObservations <- min(length(loop.data$x), length(loop.data$y))
-    return(100 * (nObservations - above) / nObservations)
-  }
-
 p_start_cluster <-
   function (condition) {
-    if (condition) {
-      # Create cluster for parallisation 
-      if (grepl("windows", tolower(.Platform$OS.type))) {
-        cat("Preparing the analysis, this might take a few seconds...\n")
+    # Always start cluster when forced
+    if (Sys.getenv(p_parallel_force) == TRUE) {
+      # Unless already started
+      if (Sys.getenv(p_parallel_start) != TRUE) {
+        registerDoParallel(p_max_cores())
+        p_setenv(p_parallel_start)
       }
-      registerDoParallel(detectCores())
+    }
+    else if (condition) {
+      paste("Starting the analysis on", p_max_cores(), "cores")
+      if (grepl("windows", tolower(.Platform$OS.type))) {
+        cat("Setting up parallelization, this might take a few seconds...")
+      }
+
+      # Create cluster for parallisation
+      registerDoParallel(p_max_cores())
+
+      if (grepl("windows", tolower(.Platform$OS.type))) {
+        cat("\r", strrep(" ", 61), "\r")
+      }
     }
     else {
-      # Do parallel, this prohibits warnings on %dopar%
+      # Do sequential, this prohibits warnings on %dopar%
       registerDoSEQ()
+    }
+  }
+
+p_stop_cluster <-
+  function () {
+    # When forced, don't stop cluster
+    if (Sys.getenv(p_parallel_force) != TRUE) {
+      stopImplicitCluster()
     }
   }
 
 p_cluster_cleanup <-
   function () {
-    env <- utils::getFromNamespace(".foreachGlobals", "foreach")
-    if (!identical(ls(name = env), character(0))) {
-      rm(list = ls(name = env), pos = env)
+    # When forced, don't cleanup
+    if (Sys.getenv(p_parallel_force) != TRUE) {
+      env <- utils::getFromNamespace(".foreachGlobals", "foreach")
+      if (!identical(ls(name = env), character(0))) {
+        rm(list = ls(name = env), pos = env)
+      }
     }
+  }
+
+p_max_cores <-
+  function () {
+    env.max.cores <- as.numeric(Sys.getenv("max.cores", 1000))
+    max.cores <- min(env.max.cores, detectCores())
+    return(max.cores)
+  }
+
+p_dopar_condition <-
+  function (condition, min.cores = 2) {
+    return(condition && p_max_cores() > min.cores)
+  }
+
+p_is_single_string <- function (input) {
+  return(is.character(input) & length(input) == 1)
+}
+
+p_setenv <-
+  function (name, value = TRUE) {
+    args <- list(value)
+    names(args) <- name
+    do.call(Sys.setenv, args)
   }

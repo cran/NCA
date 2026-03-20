@@ -5,8 +5,8 @@
 \usage{nca(data, x, y, ceilings=c('ols', 'ce_fdh', 'cr_fdh'))}
 \arguments{
 \item{data}{dataframe with columns of the variables}
-\item{x}{collection of the columns with the independent variables}
-\item{y}{index or name of the column with the dependent variable}
+\item{x}{collection of the columns with the conditions}
+\item{y}{index or name of the column with the outcomes}
 \item{ceilings}{vector with the ceiling techniques to include in this analysis}
 }
 \value{Returns a list with 3 items (see examples for further explanation):
@@ -20,7 +20,7 @@ data(nca.example)
 data <- nca.example
 
 # Basic NCA analysis
-# Independent variables in the first 2 columns, dependent variable in the third column
+# Conditions in the first 2 columns, outcome in the third column
 # This shows scatter plot(s) with the ceiling lines and the effect size(s) on the console
 nca(data, c(1, 2), 3)
 

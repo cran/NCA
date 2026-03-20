@@ -1,10 +1,10 @@
 \name{nca.example}
 \docType{data}
 \alias{nca.example}
-\title{NCA example data with 2 independent and 1 dependent variables}
+\title{NCA example data with 2 conditions and 1 output}
 \description{
-This data set has Individualism and Risk taking	as independent variables,
-and Innovation performance as the dependent variable for 28 countries.
+This data set has Individualism and Risk taking	as conditions,
+and Innovation performance as the output for 28 countries.
 }
 \usage{data(nca.example)}
 \format{A matrix containing 28 observations, incl. headers and row names.}

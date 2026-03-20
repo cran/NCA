@@ -1,5 +1,5 @@
 p_create_loop_data <-
-function (x, y, scope, flip.x, flip.y, id.x, qr.tau) {
+function (x, y, scope, flip.x, flip.y, id.x, qr.tau, custom) {
   names <- c(colnames(x), colnames(y))
   x <- x[id.x]
   scope <- scope[[id.x]]
@@ -36,5 +36,5 @@ function (x, y, scope, flip.x, flip.y, id.x, qr.tau) {
                scope.emp=scope.emp, scope.theo=scope.theo,
                scope.area=scope.area, names=names,
                flip.x=flip.x, flip.y=flip.y,
-               qr.tau=qr.tau))
+               qr.tau=qr.tau, custom=custom))
 }

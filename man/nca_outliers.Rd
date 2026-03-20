@@ -7,21 +7,21 @@ corner = NULL, flip.x = FALSE, flip.y = FALSE, scope=NULL,
 k = 1, min.dif = 1e-2, max.results = 25, plotly=FALSE, condensed = FALSE)}
 \arguments{
 \item{data}{Dataframe with columns of the variables}
-\item{x}{Index or name of the column with the independent variable}
-\item{y}{Index or name of the column with the dependent variable}
+\item{x}{Index or name of the column with the condition}
+\item{y}{Index or name of the column with the outcome}
 \item{ceiling}{Name of the ceiling technique to be used.
 If not provided, the default ceilings (CE_FDH) will be used}
 \item{corner}{either an integer or a vector of integers, indicating the corner to analyze, see Details}
-\item{flip.x}{reverse the direction of the independent variables\cr
- Use either a boolean for all independent variables, or a vector with the same length as x}
-\item{flip.y}{reverse the direction of the dependent variables, boolean}
+\item{flip.x}{reverse the direction of the conditions\cr
+ Use either a boolean for all conditions, or a vector with the same length as x}
+\item{flip.y}{reverse the direction of the outcomes, boolean}
 \item{scope}{a theoretical scope in list format : (x.low, x.high, y.low, y.high), see nca_analysis}
-\item{k}{use combinations of observations, default is 1 (single observations)}
+\item{k}{use combinations of observations, default is 1 (single observation)}
 \item{min.dif}{set the threshold for the minimum dif.rel to be considered as outlier, default is 1e-2}
 \item{max.results}{only show the first 'max.results' outliers, default is 25}
-\item{plotly}{If true shows the interactive scatter plot(s), one for each independent variable.\cr
+\item{plotly}{If true shows the interactive scatter plot(s), one for each condition.\cr
 In RStudio the plots are shown in the Viewer window. See Details.}
-\item{condensed}{If true and k > 1, hide outlier combinations for which the effect size is\cr
+\item{condensed}{If true and k > 1, hide outlier combinations for which the effect size is 
 not increased compared to the effect size of single elements of that combination. (default FALSE)}
 }
 \details{

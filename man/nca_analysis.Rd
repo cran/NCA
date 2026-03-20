@@ -2,7 +2,7 @@
 \alias{nca_analysis}
 \title{Run NCA analyses on a data set}
 \description{Run multiple types of NCA analyses on a dataset}
-\usage{nca_analysis(data, x, y, ceilings=c('ols', 'ce_fdh', 'cr_fdh'),
+\usage{nca_analysis(data, x, y, ceilings=c('ols', 'ce_fdh', 'cr_fdh'), custom=NULL,
              corner=NULL, flip.x=FALSE, flip.y=FALSE, scope=NULL,
              bottleneck.x='percentage.range', bottleneck.y='percentage.range',
              steps=10, step.size=NULL, cutoff=0, qr.tau=0.95,
@@ -10,21 +10,22 @@
              test.p_confidence=0.95, test.p_threshold=0.05)}
 \arguments{
 \item{data}{dataframe with columns of the variables}
-\item{x}{index or name (or a vector of those) with independent variable(s) x}
-\item{y}{index or name of the column with the dependent variable y}
+\item{x}{index or name (or a vector of those) with condition(s) x}
+\item{y}{index or name of the column with the outcome y}
 \item{ceilings}{vector with the ceiling techniques to include in this analysis}
+\item{custom}{custom ceiling line defined by a intercept-slope pair per condition. If only 1 pair given it will be used for all conditions.}
 \item{corner}{either an integer or a vector of integers, indicating the corner to analyze, see Details}
-\item{flip.x}{reverse the direction of the independent variables\cr
- Use either a boolean for all independent variables, or a vector with the same length as x}
-\item{flip.y}{reverse the direction of the dependent variables, boolean}
+\item{flip.x}{reverse the direction of the conditions\cr
+ Use either a boolean for all conditions, or a vector with the same length as x}
+\item{flip.y}{reverse the direction of the outcomes, boolean}
 \item{scope}{a theoretical scope in list format : (x.low, x.high, y.low, y.high), see Details}
-\item{bottleneck.x}{options for displaying the independent variables in the bottleneck table\cr
+\item{bottleneck.x}{options for displaying the conditions in the bottleneck table\cr
  'percentage.range' to display the percentage of range between min(x) and max(x)\cr
  'percentage.max' to display the percentage of max(x)\cr
  'actual' to display the actual values\cr
  'percentile' to display the percentiles\cr
  Using percentage.max with negative values might yield counterintuitive results.}
-\item{bottleneck.y}{options for displaying the dependent variables in the bottleneck table. \cr See bottleneck.x}
+\item{bottleneck.y}{options for displaying the outcomes in the bottleneck table. \cr See bottleneck.x}
 \item{steps}{this argument accepts 2 types : \cr - an integer (number of steps in the bottleneck table) \cr - a list of values (used as Y values in the bottleneck table). \cr Only useful if step.size is not defined.}
 \item{step.size}{define the step size in the bottleneck table.\cr
   The user will be warned if the stepsize does not fit the Y range.\cr
@@ -43,10 +44,10 @@ Is used to calculate the p-accuracy for a given number of resamples (test.rep), 
 \item{plots}{A list of plot-data for each x-y combination}
 \item{summaries}{A list of dataframes with the summaries for each x-y combination}
 \item{bottlenecks}{A list of dataframes with a bottleneck table for each ceiling technique}
-\item{peers}{A list of ceilings, with a list of peers for each independent variable.
+\item{peers}{A list of ceilings, with a list of peers for each condition.
 Peers are corner points of the CE-FDH ceiling line (e.g., the northwest-corners points for corner = 1)}
-\item{tests}{The results of the test for each independent variable (not human friendly, use nca_output)}
-\item{test.time}{The total time needed to run the tests for all independent variables}
+\item{tests}{The results of the test for each condition (not human friendly, use nca_output)}
+\item{test.time}{The total time needed to run the tests for all conditions}
 }
 \details{
 \bold{Corners}\cr
@@ -58,7 +59,7 @@ Corner 3 is the lower-left corner and corner 4 is the lower-right corner.
 These two corners are used for an analysis of the necessity of the presence/high level
 of x (corner = 3 ) or the absence/low level if x (corner = 4) for the absence/low level
 of y, respectively.\cr
-By default the upper left corner is analysed for all independent variables and corner
+By default the upper left corner is analysed for all conditions and corner
 is not defined. If corner is defined, flip.x and flip.y are ignored.
 \cr
 \cr
@@ -70,13 +71,13 @@ By default, the theoretical scope is not defined and the empirical scope is used
 data(nca.example)
 data <- nca.example
 
-# Basic NCA analysis, with independent variables in the first 2 columns
-# and the dependent variable in the third column
+# Basic NCA analysis, with conditions in the first 2 columns
+# and the outcome in the third column
 model <- nca_analysis(data, c(1, 2), 3)
 
 # Use nca_output to show the summaries (see nca_output documentation for more options)
 nca_output(model)
-
+\dontshow{Sys.setenv(NCA_SKIP_PURITY=TRUE)}
 # Columns can be selected by name as well
 model <- nca_analysis(data, c('Individualism', 'Risk taking'), 'Innovation performance')
 
@@ -86,14 +87,20 @@ model <- nca_analysis(data, c(1, 2), 3, ceilings=c('ce_fdh', 'ce_vrs'))
 # These are the available ceiling techniques
 print(ceilings)
 
-# By default the upper-left corner is analysed. With the corner argument for each
-# independent variable a different corner can be selected. Select corner 1 or 2
+# Define a custom ceiling line by providing the custom parameter, pairs of intercept-slope
+model <- nca_analysis(data, c(1, 2), 3, custom=c(0, 1, 0, 2))
+
+# If a single pair is provided, it will be used for all conditions
+model <- nca_analysis(data, c(1, 2), 3, custom=c(0, 1))
+
+# By default, the upper-left corner is analysed. With the corner argument for each
+# condition a different corner can be selected. Select corner 1 or 2
 # for an analysis of necessary conditions for the presence/high level of the
-# dependent variable, and corner 3 or 4 for an analysis of necessary conditions for
-# the absence/low level of the dependent variable. It is not possible to combine
+# outcome, and corner 3 or 4 for an analysis of necessary conditions for
+# the absence/low level of the outcome. It is not possible to combine
 # corner 1 or 2 with corner 3 or 4 in the same analysis as different outcomes are analysed.
-# This analyses the upper right corner for the first independent variable
-# and the upper left corner for the second independent variable:
+# This analyses the upper right corner for the first condition
+# and the upper left corner for the second condition:
 model <- nca_analysis(data, c(1, 2), 3, corner=c(2, 1))
 
 # Alternatively, for using the upper right corner(s), 'flip' the x variables
@@ -108,7 +115,7 @@ model <- nca_analysis(data, c(1, 2), 3, flip.x=c(TRUE, FALSE), flip.y=TRUE)
 # Use a theoretical scope instead of the (calculated) empirical scope
 model <- nca_analysis(data, c(1, 2), 3, scope=c(0, 120, 0, 240))
 
-# Display the peers for a ceiling and an independent variable
+# Display the peers for a ceiling and a condition
 print(model$peers$ce_fdh$Individualism)
 
 # By default, the bottleneck tables use percentages of the range for the x and y values.
@@ -149,5 +156,9 @@ model <- nca_analysis(data, c(1), 3, test.rep=1000,
                       test.p_confidence=0.9, test.p_threshold=0.05)
 # The output of the tests can be shown via nca_output with test=TRUE
 nca_output(model, test=TRUE)
+
+# If reproducible outputs are needed, set the seed to a fixed number
+set.seed(42)
+model <- nca_analysis(data, c(1), 3, test.rep=1000)
 }
 \keyword{functions}

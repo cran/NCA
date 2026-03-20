@@ -4,7 +4,7 @@ function (name1, name2, path=NULL, paper="a4") {
     name1 <- paste(path, name1, sep="/")
     gsub("//", "/", name1)
   }
-  file.name <- paste(name1, gsub(" ", "_", name2), "pdf", sep=".")
+  file.name <- paste(name1, gsub(" ", "_", name2), format(Sys.time(), "%Y-%m-%d_%H%M%S"), "pdf", sep=".")
   file.name <- gsub("_-_", "-", file.name)
 
   if (paper == "A4r") {

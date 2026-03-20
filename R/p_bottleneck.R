@@ -76,7 +76,7 @@ p_bottleneck_fdh <-
     x.peers <- peers[, 1]
     y.peers <- peers[, 2]
 
-    for (j in 1:length(mpy)) {
+    for (j in seq_along(mpy)) {
       # search the peer that is closest above to the desired outcome,
       # and select it corresponding x value of that peer
       if (flip.y) {
@@ -108,7 +108,7 @@ p_bottleneck_vrs <-
       return(p1[1] + (y - p1[2]) * (p1[1] - p2[1]) / (p1[2] - p2[2]))
     }
 
-    for (j in 1:length(mpy)) {
+    for (j in seq_along(mpy)) {
       if (flip.y) {
         index <- which(y.peers < (mpy[j, 1] + epsilon))[1]
       } else {

@@ -6,8 +6,8 @@
 \details{\tabular{ll}{
 Package:  \tab NCA\cr
 Type:     \tab Package\cr
-Version:  \tab 4.0.5\cr
-Date:     \tab 2025-12-22\cr
+Version:  \tab 5.0.0\cr
+Date:     \tab 2026-03-20\cr
 License:  \tab GPL (>= 3)\cr}
 }
 \author{
@@ -39,8 +39,8 @@ data(nca.example)
 data <- nca.example
 
 # Run NCA with the dataset and name the analysis 'model'.
-# Specify the independent (cause) and dependent (effect) variables by column index or name
-# More than 1 independent variables can be specified with a vector
+# Specify the conditions and outcomes by column index or name
+# More than 1 condition can be specified with a vector
 model <- nca_analysis(data, c(1, 2), 3)
 
 # A quick summary of the analysis can be displayed by 'model'
@@ -50,25 +50,26 @@ model
 nca_output(model)
 
 # The results of the analysis is a list of 6 items :
-# - plots (1 for each independent variable)
-# - summaries (1 for each independent variable)
+# - plots (1 for each condition)
+# - summaries (1 for each condition)
 # - bottleneck tables (1 for each ceiling technique)
-# - peers (1 dataframe for each independent variable)
-# - tests (1 list for each independent variabl)
+# - peers (1 dataframe for each condition)
+# - tests (1 list for each condition)
 # - test.time (total time to run all tests)
 names(model)
 
-# The first item contains the graphical outputs for each independent variable
+# The first item contains the graphical outputs for each condition
 # This is not really useful to humans
 model$plots[[1]]
 
-# The seconds item contains a list with the summaries for the independent variables
+# The second item contains a list with the summaries for the conditions
+# Extract individual elements with nca_extract
 model$summaries[[1]]
 
 # The third item contains a list with the bottleneck tables, one for each ceiling technique
 model$bottlenecks$cr_fdh
 
-# The fourth item shows the peers, for each independent variable
+# The fourth item shows the peers, for each condition
 model$peers$Individualism
 
 # For the fifth and sixth item, the test.rep needs to be larger than 0
@@ -76,11 +77,11 @@ model$peers$Individualism
 # Optionally the p_confidence (default 0.95) and the p_threshold (default 0) can be set
 model <- nca_analysis(data, c(1, 2), 3, test.rep=100)
 
-# The fifth item shows the tests for each independent variable
+# The fifth item shows the tests for each condition
 # This is not really useful to humans
 model$tests$Individualism
 
 # The last item shows the total time needed to perform the analysis.
-# For large values of test.rep the test may take long.  
+# For large values of test.rep the test may take long.
 model$test.time
 }

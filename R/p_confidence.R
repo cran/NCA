@@ -157,7 +157,7 @@ function (y, columns, loop.data) {
   y <- (y - y.min) / y.range
 
   start <- 1
-  for (col in 1:ncol(columns)) {
+  for (col in seq_len(ncol(columns))) {
     end <- start + columns[1, col] - 1
     ci <- p_bootstrap_column(y[start:end], columns[1, col], conf, conf.rep)
     columns[5, col] <- (ci * y.range) + y.min
@@ -243,7 +243,7 @@ function (columns, loop.data) {
   columns[5,] <-ifelse(columns[5,] < scope.theo[3], scope.theo[3], columns[5,])
 
   # Limit the confidence by the CE-FDH
-  for (col in 1:ncol(columns)) {
+  for (col in seq_len(ncol(columns))) {
     if (flip.x) {
       peer.max = max(which(peers[,1] >= columns[3, col]))
     } else {
@@ -284,7 +284,7 @@ p_conf_line <-
 function (columns) {
   x.points <- c()
   y.points <- c()
-  for (col in 1:ncol(columns)) {
+  for (col in seq_len(ncol(columns))) {
     x.points <- c(x.points, columns[2, col], columns[3, col])
     y.points <- c(y.points, columns[5, col], columns[5, col])
   }

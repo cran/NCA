@@ -1,5 +1,3 @@
-globalVariables('i')
-
 p_test <-
 function (analyses, loop.data, test.params, effect_aggregation) {
   if (test.params$rep < 1) {
@@ -16,6 +14,8 @@ function (analyses, loop.data, test.params, effect_aggregation) {
   effect.sims <- list()
   # But not for OLS
   ceilings <- names(analyses)[names(analyses) != "ols"]
+  # Purity not needed
+  loop.data[[p_skip_purity]] <- TRUE
 
   # Do you remember?
   start <- Sys.time()
@@ -24,15 +24,17 @@ function (analyses, loop.data, test.params, effect_aggregation) {
     ifelse(nchar(colnames(loop.data$x)) > 25, "...", ""))
 
   # Create a unique list of samples
+  offset <- sample.int(2^24, 1)
+  i <- NULL
   samples <- foreach (i=1:test.params$rep) %dopar% {
-    set.seed(i)
+    set.seed(offset + i)
     sample(1:h, h, replace = FALSE)
   }
 
   # For small sample sizes, make sure they are unique
   if (test.params$rep <= 720) {
     while (length(unique(samples)) < test.params$rep) {
-      set.seed(length(samples))
+      set.seed(offset + length(samples))
       samples[[length(samples) + 1]] <- sample(1:h, h, replace = FALSE)
     }
     samples <- unique(samples)
@@ -46,17 +48,7 @@ function (analyses, loop.data, test.params, effect_aggregation) {
 
     effect.sims[[ceiling]] <- foreach (sample=iter(samples)) %dopar% {
       loop.data$y <- y_org[unlist(sample)]
-
-      # We need to make sure ce_cm_conf (if present) comes before cr_cm_conf
-      if ("ce_cm_conf" %in% ceilings) {
-        analisys_ce_cm_conf <- p_nca_wrapper("ce_cm_conf", loop.data, NULL, effect_aggregation)
-        loop.data$ce_cm_conf_columns <- attr(analisys_ce_cm_conf$line, "columns")
-      }
-      if (ceiling == "ce_cm_conf") {
-        analysis <- analisys_ce_cm_conf
-      } else {
-        analysis <- p_nca_wrapper(ceiling, loop.data, NULL, effect_aggregation)
-      }
+      analysis <- p_nca_wrapper(ceiling, loop.data, NULL, effect_aggregation)
       return (analysis$effect)
     }
 
@@ -164,11 +156,11 @@ function (ceiling, ceiling_test, pdf=FALSE, path=NULL) {
   label.observed <- sprintf("observed (d = %.2f%s)", observed, label.p)
 
   # Add data plot and title
-  obj <- qplot(data, bins = bin.count, geom = 'histogram',
-               xlim = c(x.low, x.high),
-               xlab = "Permutated effect sizes", ylab = "Frequency",
-               fill = I("white"), col = I("black"), na.rm = TRUE)
-  obj <- obj + labs(title = label.main, subtitle = "")
+  df <- data.frame(x=data)
+  obj <- ggplot(df, aes(x=.data$x)) + xlim(x.low, x.high)
+  obj <- obj + geom_histogram(bins = bin.count, fill = I("white"), colour = I("black"), na.rm = TRUE)
+  obj <- obj + labs(x = "Permutated effect sizes", y = "Frequency",
+                    title = label.main, subtitle = "")
   obj <- obj + theme(plot.title=element_text(hjust=0.5))
 
   # Add lines

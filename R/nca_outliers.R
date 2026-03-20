@@ -20,18 +20,27 @@ nca_outliers <- function (data, x, y, ceiling = NULL,
   x <- colnames(data)[1]
   y <- colnames(data)[2]
 
+  # Never do purity
+  p_setenv(p_skip_purity)
+
   model <- nca_analysis(data, x, y, ceilings = ceiling, corner = corner,
                         flip.x = flip.x, flip.y = flip.y, scope = scope)
-  eff.or <- model$summaries[[1]]$params[2]
-  global <- model$summaries[[1]]$global
+  eff.or <- nca_extract(model, x, ceiling, 'Effect size')
+
   params <- list(model = model, x = x, y = y, ceiling = ceiling,
                  corner = corner, flip.x = flip.x, flip.y = flip.y,
-                 scope = scope, eff.or = eff.or, global = global,
+                 scope = scope, eff.or = eff.or,
+                 Scope = nca_extract(model, x, ceiling, 'Scope'),
+                 x.min = nca_extract(model, x, ceiling, 'Xmin'),
+                 x.max = nca_extract(model, x, ceiling, 'Xmax'),
+                 y.min = nca_extract(model, x, ceiling, 'Ymin'),
+                 y.max = nca_extract(model, x, ceiling, 'Ymax'),
                  min.dif = min.dif, peers = p_aggregate_peers(model$peers, 1))
 
   org_outliers <- p_get_outliers(data, params, 1)
   if (k == 1 && is.null(org_outliers)) {
     message("\nNo outliers identified")
+    Sys.unsetenv(p_skip_purity)
     return()
   }
   outliers <- p_format_outliers(org_outliers, max.results, 1, min.dif, condensed)
@@ -47,15 +56,29 @@ nca_outliers <- function (data, x, y, ceiling = NULL,
 
   if (k == 1) {
     # If k == 1, all outliers are shown in plotly so we have to slice here
-    return(outliers[1:min(nrow(outliers), max.results),])
+    outliers <- outliers[1:min(nrow(outliers), max.results),]
+    # Don't show 'scope' column if a theoretical scope is defined
+    if (!is.null(scope)) {
+      outliers <- outliers[, names(outliers) != 'scope']
+    }
+    Sys.unsetenv(p_skip_purity)
+    return(outliers)
   }
 
   outliers <- p_get_outliers(data, params, k, org_outliers)
   if (is.null(outliers) || nrow(outliers) == 0) {
     message("\nNo outliers identified")
+    Sys.unsetenv(p_skip_purity)
     return()
   }
-  return(p_format_outliers(outliers, max.results, k, min.dif, condensed))
+
+  outliers <- p_format_outliers(outliers, max.results, k, min.dif, condensed)
+  # Don't show 'scope' column if a theoretical scope is defined
+  if (!is.null(scope)) {
+    outliers <- outliers[, names(outliers) != 'scope']
+  }
+  Sys.unsetenv(p_skip_purity)
+  return(outliers)
 }
 
 
@@ -78,9 +101,12 @@ p_check_input <- function (x, y, ceiling) {
     message("Outlier detection needs a single ceiling")
     return(FALSE)
   }
-  if (ceiling == "ols") {
+
+  tmp <- c(p_ceilings_step, p_ceilings_line)
+  allowed <- tmp[tmp != "ols"]
+  if (!(ceiling %in% allowed)) {
     message()
-    message("Outlier detection does not work with OLS")
+    message(paste("Outlier detection does not work with", ceiling))
     return(FALSE)
   }
 
@@ -96,18 +122,12 @@ p_get_outliers <- function (data, params, k, org_outliers = NULL) {
   combos <- p_get_combos(data, params, k)
 
   # Start a cluster if needed
-  condition <- detectCores() > 2 && nrow(combos) > 250
+  condition <- p_dopar_condition(nrow(combos) > 250)
   p_start_cluster(condition)
-  if (condition) {
-    message("Starting the analysis on ", detectCores(), " cores")
-  }
-  else {
-    registerDoSEQ()
-  }
 
   idx <- NULL
   ids <- seq(1, nrow(combos), max(1, round(nrow(combos) / 50)))
-  outliers <- foreach(idx = 1:nrow(combos), .combine = rbind) %dopar% {
+  outliers <- foreach(idx = seq_len(nrow(combos)), .combine = rbind) %dopar% {
     if (condition && idx %in% ids) {
       cat(".")
     }
@@ -118,44 +138,46 @@ p_get_outliers <- function (data, params, k, org_outliers = NULL) {
   }
 
   if (is.null(outliers)) {
-    return (org_outliers)
+    p_stop_cluster()
+
+    return(org_outliers)
   }
 
-  new_outliers <- foreach(idx = 1:nrow(outliers), .combine = rbind) %dopar% {
-    outlier <- outliers[idx, ]
+  new_outliers <- foreach(idx = seq_len(nrow(outliers)), .combine = rbind) %dopar% {
+    outlier <- outliers[idx,]
     old_combo <- outlier[8]
     tmp <- org_outliers
 
     f <- function (n) {
       dif.rel <- tmp[tmp[, "combo"] %in% n,]$dif.rel
-      return (abs(ifelse(is.null(dif.rel), 0, dif.rel)))
+      return(abs(ifelse(is.null(dif.rel), 0, dif.rel)))
     }
 
     ord <- unlist(sapply(unlist(old_combo), f))
     tmp <- list(unlist(old_combo)[order(-ord)])
     outlier[1] <- p_get_names(unlist(tmp), k)$outliers
 
-    return (outlier)
+    return(outlier)
   }
 
-  stopImplicitCluster()
+  p_stop_cluster()
 
   return(rbind(org_outliers, new_outliers))
 }
 
 
-p_get_all_names <- function (data, peers, global, params, k) {
+p_get_all_names <- function (data, peers, params, k) {
   all.names <- rownames(peers)
   tmp.var <- c(params$x, params$x, params$y, params$y)
-  tmp.scope <- c(3, 4, 5, 6)
+  scope <- c(params$x.min, params$x.max, params$y.min, params$y.max)
   for (idx in 1:4) {
-    tmp <- data[data[[tmp.var[idx]]] %in% global[tmp.scope[idx]],]
+    tmp <- data[data[[tmp.var[idx]]] %in% scope[[idx]],]
     if (k >= nrow(tmp)) {
       all.names <- c(all.names, rownames(tmp))
     }
   }
 
-  return (all.names)
+  return(all.names)
 }
 
 
@@ -165,7 +187,7 @@ p_get_combos <- function (data, params, k) {
     return(t(combn(rownames(data), k)))
   }
 
-  all.names <- p_get_all_names(data, params$peers, params$global, params, k)
+  all.names <- p_get_all_names(data, params$peers, params, k)
 
   counter <- k
   while (counter > 1) {
@@ -174,10 +196,9 @@ p_get_combos <- function (data, params, k) {
                           corner = params$corner, flip.x = params$flip.x,
                           flip.y = params$flip.y, scope = params$scope)
 
-    global <- model$summaries[[1]]$global
     all.names <- c(
       all.names,
-      p_get_all_names(data, p_aggregate_peers(model$peers, 1), global, params, k)
+      p_get_all_names(data, p_aggregate_peers(model$peers, 1), params, k)
     )
 
     counter <- counter - 1
@@ -185,7 +206,7 @@ p_get_combos <- function (data, params, k) {
 
   all.names <- unique(all.names)
   if (k == 1) {
-    return (matrix(all.names, ncol = 1))
+    return(matrix(all.names, ncol = 1))
   }
 
   combos <- NULL
@@ -246,21 +267,30 @@ p_get_values <- function (data.new, params) {
                             ceilings = params$ceiling, corner = params$corner,
                             flip.x = params$flip.x, flip.y = params$flip.y,
                             scope = params$scope)
-  eff.nw <- model.new$summaries[[1]]$params[2]
+  eff.nw <- nca_extract(model.new, params$x, params$ceiling, 'Effect size')
+
   dif.abs <- ifelse(is.na(eff.nw), 0, eff.nw - params$eff.or)
   zero.dif.rel <- ifelse(dif.abs < epsilon, 0, Inf)
   dif.rel <- ifelse(params$eff.or < epsilon, zero.dif.rel, 100 * dif.abs / params$eff.or)
-  global.new <- model.new$summaries[[1]]$global
+  global.new <- c(
+    nca_extract(model.new, params$x, params$ceiling, 'Scope'),
+    nca_extract(model.new, params$x, params$ceiling, 'Xmin'),
+    nca_extract(model.new, params$x, params$ceiling, 'Xmax'),
+    nca_extract(model.new, params$x, params$ceiling, 'Ymin'),
+    nca_extract(model.new, params$x, params$ceiling, 'Ymax')
+  )
+
   return(list(eff.nw, dif.abs, dif.rel, global.new))
 }
 
 
 p_zone_scope <- function (combo, params, global.new) {
-  idx <- ncol(global.new)
-  found_scope <- !all(global.new[2:6, idx] == params$global[2:6, idx])
+  global.org <- c(params$Scope,
+                  params$x.min, params$x.max, params$y.min, params$y.max)
+  found_scope <- !all(global.new == global.org)
 
   if (params$ceiling[1] %in% p_no_peer_line) {
-    found_ceiling <- T
+    found_ceiling <- TRUE
   }
   else {
     found_ceiling <- any(combo %in% rownames(params$peers))
@@ -291,8 +321,8 @@ p_format_outliers <- function (outliers, max.results, k, min.dif, condensed) {
   outliers <- data.frame(outliers)
 
   for (i in 1:7) { outliers[[i]] <- unlist(outliers[[i]]) }
-  for (row_idx in 1:nrow(outliers)) {
-    len <- length(unlist(strsplit(outliers[row_idx, 1], ' - ', fixed=T)))
+  for (row_idx in seq_len(nrow(outliers))) {
+    len <- length(unlist(strsplit(outliers[row_idx, 1], ' - ', fixed = T)))
     outliers[row_idx, 9] <- len
   }
   outliers <- outliers[order(-abs(outliers$dif.rel), -abs(outliers$dif.abs), outliers[, 9]),]
@@ -305,14 +335,14 @@ p_format_outliers <- function (outliers, max.results, k, min.dif, condensed) {
       keep <- 1
       # Remove outliers which are not larger than previous (but keep singles)
       for (row_idx in 2:nrow(outliers)) {
-        parts <- unlist(strsplit(outliers[row_idx, 1], ' - ', fixed=T))
+        parts <- unlist(strsplit(outliers[row_idx, 1], ' - ', fixed = T))
         current <- abs(outliers[row_idx, 5])
         prev <- abs(outliers[row_idx - 1, 5])
         if (length(parts) == 1 || abs(current - prev) > min.dif) {
           keep <- c(keep, row_idx)
         }
       }
-      outliers <- outliers[keep, ]
+      outliers <- outliers[keep,]
     }
 
     outliers <- outliers[1:min(nrow(outliers), max.results),]
@@ -326,14 +356,14 @@ p_format_outliers <- function (outliers, max.results, k, min.dif, condensed) {
     attr(outliers, SHOWN) <- nrow(outliers)
     attr(outliers, HIDDEN) <- org.length - nrow(outliers)
   }
-  class(outliers) <- c("outliers", class(outliers))
+  class(outliers) <- c("nca_outliers", class(outliers))
 
   rownames(outliers) <- NULL
   return(outliers)
 }
 
 
-print.outliers <- function (x, ...) {
+print.nca_outliers <- function (x, ...) {
   # NextMethod()
   print(format(x, justify = "left"))
 

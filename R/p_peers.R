@@ -9,10 +9,11 @@ p_peers <-
       return(NULL)
     }
 
-    x.sorted <- x[order(if (flip.x) -x else x, if (flip.y) -y else y)]
-    y.sorted <- y[order(if (flip.x) -x else x, if (flip.y) -y else y)]
+    the.order <- order(if (flip.x) -x else x, if (flip.y) -y else y)
+    x.sorted <- x[the.order]
+    y.sorted <- y[the.order]
+    rownames.org <- rownames(x)[the.order]
     peers <- matrix(c(x.sorted[1], y.sorted[1]), ncol = 2)
-    rownames.org <- rownames(x)[order(if (flip.x) -x else x)]
     rownames <- rownames.org[1]
 
     for (i in 2:length(x.sorted)) {
@@ -93,13 +94,13 @@ p_aggregate_peers <-
     for (ceiling in names(model.peers)) {
       peers <- rbind(peers, model.peers[[ceiling]][[x]])
     }
-    return(unique(peers))
+    return(peers)
   }
 
 p_get_line_peers <-
   function (loop.data, intercept, slope) {
     peers <- p_peers(loop.data, vrs = TRUE)
-    if (is.null(intercept) || is.null(slope)) {
+    if (is.null(intercept) || is.null(slope) || nrow(peers) <= 1) {
       return(NULL)
     }
     return(p_best_peers(peers, intercept, slope))

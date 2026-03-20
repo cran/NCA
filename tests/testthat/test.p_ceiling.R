@@ -1,5 +1,10 @@
 test_that("str_length is number of characters", {
-  loop.data = list(scope.theo=c(1, 6, 2, 6), scope.area=20)
+  if (!exists("p_ceiling")) {
+    # Needed for testing manually
+    source("../../R/p_ceiling.R")
+  }
+
+  loop.data <- list(scope.theo=c(1, 6, 2, 6), scope.area=20)
 
   test1 <- TRUE
   test2 <- TRUE
