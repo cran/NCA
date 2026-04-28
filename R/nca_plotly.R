@@ -68,7 +68,7 @@ p_display_plotly <-
       line_list <- list(color = line_color, width = lineWidth,
                         dash = paste0(line_type, 'px'))
 
-      if (is_infinite(line) || is.null(line)) {
+      if (is_infinite_null(line)) {
         next
       }
 

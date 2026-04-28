@@ -6,6 +6,7 @@ p_plot <-
     plot$y <- loop.data$y
     plot$scope.theo <- loop.data$scope.theo
     plot$names <- loop.data$names
+    plot$corner <- corner
     plot$flip.x <- ifelse(is.null(corner), loop.data$flip.x, FALSE)
     plot$flip.y <- ifelse(is.null(corner), loop.data$flip.y, FALSE)
     plot$conf <- loop.data$conf
@@ -34,6 +35,10 @@ p_display_plot <-
     point_color <- params[[5]]
     point_size <- params[[6]]
 
+    corner <- plot$corner
+    flip.x <- plot$flip.x
+    flip.y <- plot$flip.y
+
     # Open new window or PDF
     if (pdf) {
       p_new_pdf("plot", plot$title, path)
@@ -44,8 +49,8 @@ p_display_plot <-
     }
 
     # Add extra width / height for bottleneck data
-    xlim <- c(plot$scope.theo[1 + plot$flip.x], plot$scope.theo[2 - plot$flip.x])
-    ylim <- c(plot$scope.theo[3 + plot$flip.y], plot$scope.theo[4 - plot$flip.y])
+    xlim <- c(plot$scope.theo[1 + flip.x], plot$scope.theo[2 - flip.x])
+    ylim <- c(plot$scope.theo[3 + flip.y], plot$scope.theo[4 - flip.y])
     if (!is.null(names(bottleneck.list$hor))) {
       xlim <- c(xlim[1] - diff(xlim) / 10, xlim[2])
     }
@@ -87,15 +92,25 @@ p_display_plot <-
     p <- p_ggplot_outline(p, plot)
 
     # Plot the bottlenecks
-    p <- p_ggplot_bottlenecks(p, bottleneck.list, plot$flip.x, plot$flip.y)
+    p <- p_ggplot_bottlenecks(p, bottleneck.list, flip.x, flip.y)
 
     # Process Lines
     lines_data <- data.frame()
     for (method in plot$methods) {
       line_matrix <- plot$line_matrices[[method]]
-      if (is_infinite(line_matrix)) {
+      if (is_infinite_null(line_matrix)) {
         next
       }
+
+      # Sort matrix depending on corner / flipping
+      on.x <- line_matrix[, 1]
+      on.y <- line_matrix[, 2]
+      # Corner 2 or 3 || flip.x XOR flip.y
+      if ((!is.null(corner) && corner %in% c(2, 3)) || xor(flip.x, flip.y)) {
+        on.y <- -1 * on.y
+      }
+      line_matrix <- line_matrix[order(on.x, on.y),]
+
       tmp_df <- as.data.frame(line_matrix)
       names(tmp_df) <- c("x", "y")
       tmp_df$method <- p_pretty_name(method)
@@ -201,8 +216,12 @@ get_plot_params <-
     return(list(line_colors, line_types, line_width, point_type, point_color, point_size))
   }
 
-is_infinite <-
+is_infinite_null <-
   function (line) {
+    if (is.null(line)) {
+      return(TRUE)
+    }
+
     # LH line
     if (typeof(line) == "double" && !all(is.finite(line))) {
       return(TRUE)

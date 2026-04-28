@@ -1,4 +1,4 @@
-7265175cc991c7fd38f6ea3bf4444561 *DESCRIPTION
+60b2390cadc7a804b61ee64131e62398 *DESCRIPTION
 bb627dee9d79cb26c80cfc0d10b178df *NAMESPACE
 b051acc045b2d119f27e11d23871bc8d *NEWS.md
 fc2b34951f9465f48b111b313350e11a *R/nca.R
@@ -8,8 +8,8 @@ cdb9955a2a3ab3a10849ed0f8b59e715 *R/nca_extract.R
 bc2a5a96670219408820289143efefa2 *R/nca_normalize.R
 bf9f2ad226422b5815e38ccf4c0fbed8 *R/nca_outliers.R
 1f93cf7e0367bab82059826f59e6b5fe *R/nca_output.R
-60efdd04be223b1eac33f0a84f076ef0 *R/nca_plotly.R
-c78af78995cde4f23dba10aa72acdba5 *R/nca_plots.R
+9c17a26b49fa8e8439dbabfe27a66cd9 *R/nca_plotly.R
+937d2f84cb20edef9bbc32f6c37d9a0c *R/nca_plots.R
 95dd64dd3630b601a77e1df4be2aca5f *R/nca_power.R
 988dd45d741e9085100d32043bd95625 *R/nca_random.R
 26483f7b64a0c3592bd814defdc11d91 *R/nca_summary.R
@@ -45,7 +45,7 @@ f51ba7c8bc94d8cf1fd072b85c6e53ab *build/partial.rdb
 f3e66c43f793cb1888eca41ca3771858 *data/datalist
 7d496797b645e219cdf16252413c4dd0 *data/nca.example.RData
 e21947425449c54e4f93df892466663c *data/nca.example2.RData
-0d1226ae867442788230de85dd19614b *man/NCA-package.Rd
+305a55c7e21a1424cad03365cf3f8bdd *man/NCA-package.Rd
 3e88d7cea552f5d65882affacb5227bb *man/ceilings.Rd
 8069ba7fc0b686a7f07f85f08ac8d85b *man/line.colors.Rd
 8a7a03db41bcc68fb0b49ba5b79b0a6f *man/line.types.Rd

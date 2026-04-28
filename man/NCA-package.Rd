@@ -6,8 +6,8 @@
 \details{\tabular{ll}{
 Package:  \tab NCA\cr
 Type:     \tab Package\cr
-Version:  \tab 5.0.0\cr
-Date:     \tab 2026-03-20\cr
+Version:  \tab 5.0.1\cr
+Date:     \tab 2026-04-29\cr
 License:  \tab GPL (>= 3)\cr}
 }
 \author{
